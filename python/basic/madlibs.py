@@ -1,0 +1,7 @@
+print ("A vacation is when you take a trip to some...place with your...family. Usually you go to some place that is near a/an...or upon a/an....")
+adj1 = input ("Enter your 1st adj: ")
+adj2 = input ("Enter your 2nd adj: ")
+n1 = input ("Enter your 1st n: ")
+n2 = input ("Enter your 2nd n: ")
+print ("A vacation is when you take a trip to some " + adj1 + " place with your " + adj2 + " family.")
+print ("Usually you go to some place that is near a/an " + n1 + " or upon a/an " + n2 + ".")

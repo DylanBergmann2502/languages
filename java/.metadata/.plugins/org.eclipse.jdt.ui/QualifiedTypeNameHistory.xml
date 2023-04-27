@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="basic.Dog_Static"/>
+    <fullyQualifiedTypeName name="basic.OuterClass.InnerClass2"/>
+    <fullyQualifiedTypeName name="java.time.format.DateTimeFormatter"/>
+    <fullyQualifiedTypeName name="java.io.BufferedWriter"/>
+    <fullyQualifiedTypeName name="java.io.FileWriter"/>
+    <fullyQualifiedTypeName name="java.io.BufferedReader"/>
+    <fullyQualifiedTypeName name="java.io.FileReader"/>
+    <fullyQualifiedTypeName name="java.util.ArrayList"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="java.awt.print.Printable"/>
+    <fullyQualifiedTypeName name="java.lang.annotation.Target"/>
+    <fullyQualifiedTypeName name="java.lang.annotation.Retention"/>
+    <fullyQualifiedTypeName name="java.lang.annotation.RetentionPolicy"/>
+    <fullyQualifiedTypeName name="java.lang.reflect.Field"/>
+</qualifiedTypeNameHistroy>
