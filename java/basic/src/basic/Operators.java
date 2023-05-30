@@ -11,7 +11,7 @@ public class Operators {
 		int b = 10;
 		
 		int math_operator = (x + y) * z - b / a;
-		int u1 = z/y; 
+		int u1 = z/y;
 		//dividing using 2 ints => result = int no matter what
 		double u2 = z/y;
 		
@@ -24,7 +24,7 @@ public class Operators {
 		
 		int d = 56%5; // % is modulus/remainder => return the remainder
 		
-		System.out.println(d);
+		System.out.println(u2);
 	}
 
 }
