@@ -59,9 +59,20 @@ String.graphemes("Hello" |> Enum.reverse())
 
 String.graphemes("Hello") |> Enum.reverse()
 
-# or
+# or, even better
 
 "Hello" |> String.graphemes() |> Enum.reverse()
 
 ## Elixir always pipes to a function call. Therefore,
 ## to pipe into an anonymous function, you need to invoke it
+
+double = fn x -> (x + 1) * 2 end
+
+# This won't work
+[1, 2, 3, 4, 5] |> Enum.map(double)
+
+# but this will
+[1, 2, 3, 4, 5] |> Enum.map(&double.(&1))
+
+# or you can you then
+[1, 2, 3, 4, 5] |> then(Enum.map(fn x -> (x + 1) * 2 end))
