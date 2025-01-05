@@ -38,3 +38,14 @@ if age >= 16, [{:do, "beer"}, {:else, "no beer"}]
 
 ################################
 # Pattern matching
+# To successfully pattern match on a keyword list,
+# you would need to specify all of the keys in the correct order
+# This makes pattern matching an unlikely choice
+# for working with keyword lists.
+# Use the Keyword module or Access behaviour instead.
+
+# [month: month] = [month: "April", year: 2018]
+# => ** (MatchError) no match of right hand side value: [month: "April", year: 2018]
+
+# [year: year, month: month] = [month: "April", year: 2018]
+# => ** (MatchError) no match of right hand side value: [month: "April", year: 2018]

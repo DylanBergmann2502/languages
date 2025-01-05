@@ -1,3 +1,8 @@
+# if/2 is actually a macro, not a language construct
+# One liner
+if(foo, do: bar, else: baz)
+
+# Block
 if true do
   "This works!"
 else
