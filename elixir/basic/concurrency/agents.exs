@@ -39,3 +39,29 @@ IO.inspect(name)  # "Alice"
 # Get the entire store
 state = Agent.get(store, fn map -> map end)
 IO.inspect(state)  # %{name: "Alice", age: 30}
+
+##########################################################
+# Implementing Agent callbacks with `use`
+defmodule Counter do
+  use Agent
+
+  def start_link(initial_value) do
+    Agent.start_link(fn -> initial_value end, name: __MODULE__)
+  end
+
+  def value do
+    Agent.get(__MODULE__, & &1)
+  end
+
+  def increment do
+    Agent.update(__MODULE__, &(&1 + 1))
+  end
+
+  def run do
+    Counter.start_link(0)
+    Counter.increment()
+    IO.inspect(Counter.value()) # 1
+  end
+end
+
+Counter.run()
