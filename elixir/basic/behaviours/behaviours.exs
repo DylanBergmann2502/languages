@@ -1,6 +1,7 @@
 # Define a behaviour for a payment processor
 defmodule PaymentProcessor1 do
-  @callback process_payment(amount :: float, currency :: String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @callback process_payment(amount :: float, currency :: String.t()) ::
+              {:ok, String.t()} | {:error, String.t()}
   @callback validate_amount(amount :: float) :: boolean()
 
   # Optional callback with default implementation
@@ -36,10 +37,12 @@ defmodule StripeProcessor1 do
 
   def run do
     result1 = StripeProcessor1.process_payment(100.50, "USD")
-    IO.inspect(result1) # {:ok, "Payment processed: 100.5 USD"}
+    # {:ok, "Payment processed: 100.5 USD"}
+    IO.inspect(result1)
 
     result2 = StripeProcessor1.process_payment(100.50, "XXX")
-    IO.inspect(result2) # {:error, "Invalid payment details"}
+    # {:error, "Invalid payment details"}
+    IO.inspect(result2)
   end
 end
 
@@ -49,7 +52,8 @@ StripeProcessor1.run()
 
 defmodule PaymentProcessor2 do
   # Required callbacks
-  @callback process_payment(amount :: float, currency :: String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @callback process_payment(amount :: float, currency :: String.t()) ::
+              {:ok, String.t()} | {:error, String.t()}
   @callback validate_amount(amount :: float) :: boolean()
 
   # Optional callback
@@ -93,10 +97,12 @@ defmodule StripeProcessor2 do
 
   def run do
     result1 = StripeProcessor2.process_payment(100.50, "USD")
-    IO.inspect(result1) # {:ok, "Payment processed: 100.5 USD"}
+    # {:ok, "Payment processed: 100.5 USD"}
+    IO.inspect(result1)
 
     result2 = StripeProcessor2.process_payment(100.50, "XXX")
-    IO.inspect(result2) # {:error, "Invalid payment details"}
+    # {:error, "Invalid payment details"}
+    IO.inspect(result2)
   end
 end
 

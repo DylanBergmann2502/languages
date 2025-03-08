@@ -14,10 +14,10 @@ IO.puts("hello world!")
 # If any other value is given, Elixir will attempt to convert it to a string.
 IO.puts("Elixir can convert booleans to strings: #{true}") # => "Elixir can convert booleans to strings: true"
 IO.puts("And #{["lists", ", ", "too!"]}")                  # => "And lists, too!"
-# IO.puts("But not functions: #{fn x -> x end}")             # => Error !
+# IO.puts("But not functions: #{fn x -> x end}")           # => Error !
 
 ########################################################
-## Herdocs
+## Heredocs
 docs = """
 1
 2
