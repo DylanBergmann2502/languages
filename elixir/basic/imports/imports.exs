@@ -141,5 +141,5 @@ end
 
 # Try it out
 EnglishPerson.run()
-IO.inspect(FrenchPerson.hello("Marie"))  # "Bonjour, Marie!"
+IO.inspect(FrenchPerson.hello("Marie"))   # "Bonjour, Marie!"
 IO.inspect(FrenchPerson.goodbye("Marie")) # "Goodbye, Marie!"
