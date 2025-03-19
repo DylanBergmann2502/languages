@@ -12,7 +12,7 @@ puts "World"  # Outputs: World + newline
 # print doesn't add a newline
 print "Hello "  # Outputs: Hello (without newline)
 print "World"   # Outputs: World (continuing on same line)
-puts           # Just adds a newline
+puts            # Just adds a newline
 
 # p inspects and prints objects (shows more details)
 p "Hello"      # Outputs: "Hello" (with quotes)
@@ -30,12 +30,12 @@ puts "\nGetting User Input:"
 
 # Basic input with gets
 print "Enter your name: "
-name = gets        # Read a line of input (includes the newline character)
+name = gets            # Read a line of input (includes the newline character)
 puts "Hello, #{name}"  # Hello, [name with extra newline]
 
 # Remove the trailing newline with chomp
 print "Enter your name again: "
-name = gets.chomp  # Read a line and remove newline character
+name = gets.chomp       # Read a line and remove newline character
 puts "Hello, #{name}!"  # Hello, [name]!
 
 # Converting input to other types

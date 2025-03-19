@@ -23,7 +23,7 @@ puts 5 ** 3         # 125 (exponentiation)
 ########################################################################
 # Strings: Sequences of characters
 single_quoted = "Hello"
-double_quoted = "World"
+double_quoted = 'World'
 
 puts single_quoted + " " + double_quoted  # Hello World
 
@@ -57,15 +57,15 @@ puts "success".object_id == "success".object_id  # false
 is_sunny = true
 is_raining = false
 
-puts is_sunny       # true
-puts is_raining     # false
-puts is_sunny.class # TrueClass
+puts is_sunny         # true
+puts is_raining       # false
+puts is_sunny.class   # TrueClass
 puts is_raining.class # FalseClass
 
 ########################################################################
 # nil: Ruby's "nothing" value
 empty_value = nil
-puts empty_value    # nil
+puts empty_value        # nil
 puts empty_value.class  # NilClass
 puts empty_value.nil?   # true
 
@@ -104,12 +104,12 @@ puts person[:name]   # Alice
 
 ########################################################################
 # Ranges: Sequences of values
-digit_range = 0..9   # Inclusive range (includes 9)
-alpha_range = "a"..."z"  # Exclusive range (excludes 'z')
+digit_range = 0..9        # Inclusive range (includes 9)
+alpha_range = "a"..."z"   # Exclusive range (excludes 'z')
 
-puts digit_range.class  # Range
-puts digit_range.to_a   # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-puts alpha_range.to_a   # ["a", "b", "c", ... "y"]
+puts digit_range.class    # Range
+puts digit_range.to_a     # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+puts alpha_range.to_a     # ["a", "b", "c", ... "y"]
 
 ########################################################################
 # Type conversion

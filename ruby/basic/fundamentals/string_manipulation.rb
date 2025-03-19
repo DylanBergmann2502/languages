@@ -109,20 +109,20 @@ puts "\nReplacing Content:"
 text = "Ruby is fun. Ruby is powerful."
 
 # Replace first occurrence
-puts text.sub("Ruby", "Python")  # Python is fun. Ruby is powerful.
+puts text.sub("Ruby", "Python")   # Python is fun. Ruby is powerful.
 
 # Replace all occurrences
-puts text.gsub("Ruby", "Python") # Python is fun. Python is powerful.
+puts text.gsub("Ruby", "Python")  # Python is fun. Python is powerful.
 
 # With regular expressions
-puts text.gsub(/[aeiou]/, "*")   # R*by *s f*n. R*by *s p*w*rf*l.
+puts text.gsub(/[aeiou]/, "*")    # R*by *s f*n. R*by *s p*w*rf*l.
 
 # Original string remains unchanged
-puts text                       # Ruby is fun. Ruby is powerful.
+puts text                         # Ruby is fun. Ruby is powerful.
 
 # Use sub! or gsub! to modify the original
 text.gsub!("Ruby", "Python")
-puts text                       # Python is fun. Python is powerful.
+puts text                         # Python is fun. Python is powerful.
 
 ########################################################################
 # Splitting and Joining
@@ -147,9 +147,9 @@ puts fruits.join(", ")           # apple, banana, orange
 puts "\nTrimming Whitespace:"
 text = "  Hello, World!  "
 
-puts text.strip                 # "Hello, World!" (removes leading/trailing spaces)
-puts text.lstrip                # "Hello, World!  " (removes leading spaces)
-puts text.rstrip                # "  Hello, World!" (removes trailing spaces)
+puts text.strip   # "Hello, World!" (removes leading/trailing spaces)
+puts text.lstrip  # "Hello, World!  " (removes leading spaces)
+puts text.rstrip  # "  Hello, World!" (removes trailing spaces)
 
 ########################################################################
 # String Formatting
@@ -192,11 +192,11 @@ puts frozen_str.frozen?    # true or false depending on Ruby version and setting
 puts "\nOther Useful Methods:"
 text = "hello world"
 
-puts text.length        # 11 (number of characters)
-puts text.size          # 11 (alias for length)
-puts text.reverse       # dlrow olleh
-puts text.chars         # ["h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d"]
-puts text.chars.uniq    # ["h", "e", "l", "o", " ", "w", "r", "d"]
+puts text.length          # 11 (number of characters)
+puts text.size            # 11 (alias for length)
+puts text.reverse         # dlrow olleh
+puts text.chars           # ["h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d"]
+puts text.chars.uniq      # ["h", "e", "l", "o", " ", "w", "r", "d"]
 puts text.ljust(15, "*")  # hello world****
 puts text.rjust(15, "*")  # ****hello world
 puts text.center(15, "*") # **hello world**

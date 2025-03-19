@@ -101,5 +101,5 @@ puts __LINE__  # Prints the current line number
 
 # nil is Ruby's "nothing" value (similar to null in other languages)
 empty = nil
-puts empty  # nil
+puts empty       # nil
 puts empty.nil?  # true

@@ -12,7 +12,7 @@ puts "Hello, #{name}!"  # Hello, Ruby!
 
 ########################################################################
 # Ruby has both single and double quotes for strings
-puts "Hello, World!"    # Single quotes
+puts 'Hello, World!'    # Single quotes
 puts "Hello, World!"    # Double quotes
 
 # The difference is that double quotes allow for escape sequences and interpolation
@@ -32,9 +32,9 @@ puts message
 ########################################################################
 # You can also use string methods
 greeting = "hello, world!"
-puts greeting.upcase    # HELLO, WORLD!
-puts greeting.capitalize # Hello, world!
-puts greeting.reverse   # !dlrow ,olleh
+puts greeting.upcase      # HELLO, WORLD!
+puts greeting.capitalize  # Hello, world!
+puts greeting.reverse     # !dlrow ,olleh
 
 ########################################################################
 # In Ruby, everything is an object, even literals

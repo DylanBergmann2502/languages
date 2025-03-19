@@ -134,12 +134,12 @@ puts "Score: #{score}, Grade: #{grade}"  # Score: 85, Grade: B
 
 # =~ operator for regular expression matching
 text = "Hello, Ruby!"
-puts "text =~ /Ruby/: #{text =~ /Ruby/}"  # 7 (index of match)
+puts "text =~ /Ruby/: #{text =~ /Ruby/}"      # 7 (index of match)
 puts "text =~ /Python/: #{text =~ /Python/}"  # nil (no match)
 
 # .. and ... for sequences in an array
 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-puts "numbers[2..5]: #{numbers[2..5]}"  # [3, 4, 5, 6]
+puts "numbers[2..5]: #{numbers[2..5]}"    # [3, 4, 5, 6]
 puts "numbers[2...5]: #{numbers[2...5]}"  # [3, 4, 5]
 
 # defined? operator to check if something is defined
