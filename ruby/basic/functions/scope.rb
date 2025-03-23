@@ -184,5 +184,5 @@ class SelfDemo
 end
 
 demo = SelfDemo.new
-demo.show_self       # Output: Inside instance method, self is: #<SelfDemo:0x...>
+demo.show_self         # Output: Inside instance method, self is: #<SelfDemo:0x...>
 SelfDemo.class_method  # Output: Inside class method, self is: SelfDemo

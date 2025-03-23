@@ -18,16 +18,29 @@ end
 puts "Resuming fiber first time:"
 result1 = fiber.resume
 puts "Fiber yielded: #{result1}"
+# Resuming fiber first time:
+# Fiber started
+# Fiber yielded: First yield
 
 puts "\nResuming fiber second time:"
 result2 = fiber.resume
 puts "Fiber yielded: #{result2}"
+# 
+# Resuming fiber second time:
+# Fiber resumed
+# Fiber yielded: Second yield
 
 puts "\nResuming fiber third time:"
 result3 = fiber.resume
 puts "Fiber returned: #{result3}"
+# 
+# Resuming fiber third time:
+# Fiber resumed again
+# Fiber returned: Final value
 
 puts "\nFiber status: #{fiber.alive? ? "alive" : "dead"}"
+# 
+# Fiber status: dead
 
 # Attempting to resume a dead fiber raises an error
 begin
@@ -35,6 +48,7 @@ begin
 rescue => e
   puts "Error resuming dead fiber: #{e.message}"
 end
+# Error resuming dead fiber: dead fiber called
 
 ########################################################################
 # Fibers with Arguments
@@ -49,10 +63,18 @@ end
 puts "\nResuming fiber with argument:"
 result = fiber.resume("Hello, Fiber!")
 puts "Fiber yielded: #{result}"
+# 
+# Resuming fiber with argument:
+# Fiber received: Hello, Fiber!
+# Fiber yielded: Send me another value
 
 puts "\nResuming fiber with second argument:"
 final = fiber.resume("Resuming with this value")
 puts "Fiber returned: #{final}"
+# 
+# Resuming fiber with second argument:
+# Fiber received second value: Resuming with this value
+# Fiber returned: Done
 
 ########################################################################
 # Using Fibers for Generators
@@ -72,6 +94,18 @@ puts "\nGenerating Fibonacci sequence:"
 10.times do
   puts fib.resume
 end
+# 
+# Generating Fibonacci sequence:
+# 0
+# 1
+# 1
+# 2
+# 3
+# 5
+# 8
+# 13
+# 21
+# 34
 
 ########################################################################
 # Fiber-based Iteration
@@ -93,6 +127,13 @@ while (fruit = iterator.resume)
   puts "Got fruit: #{fruit}"
 end
 puts "Iterator exhausted"
+# 
+# Iterating with fibers:
+# Got fruit: apple
+# Got fruit: banana
+# Got fruit: cherry
+# Got fruit: date
+# Iterator exhausted
 
 ########################################################################
 # Fiber Pools and Reusing Fibers
@@ -107,14 +148,16 @@ if Fiber.respond_to?(:reset)
   end
 
   3.times { puts "Count: #{counter_fiber.resume}" }
-
+  
   # Reset the fiber
   counter_fiber.reset if counter_fiber.respond_to?(:reset)
   puts "Fiber has been reset"
-
+  
   3.times { puts "Count after reset: #{counter_fiber.resume}" }
 else
   puts "\nFiber reset is not available in this Ruby version"
+  # 
+  # Fiber reset is not available in this Ruby version
 end
 
 ########################################################################
@@ -129,6 +172,10 @@ fiber = Fiber.new do
   puts "  - Fiber resumed"
 end
 puts "  - Fiber is created but not running yet"
+# 
+# Comparing Fibers and Threads:
+# 1. Creating a fiber (does not run automatically):
+#   - Fiber is created but not running yet
 
 puts "2. Creating a thread (runs immediately):"
 thread = Thread.new do
@@ -138,12 +185,21 @@ thread = Thread.new do
 end
 puts "  - Main thread continues while thread runs"
 thread.join
+# 2. Creating a thread (runs immediately):
+#   - Thread is now running
+#   - Main thread continues while thread runs
+#   - Thread continued after sleep
 
 puts "3. Now resuming the fiber:"
 fiber.resume
 puts "  - Back to main after first fiber yield"
 fiber.resume
 puts "  - Fiber completed"
+# 3. Now resuming the fiber:
+#   - Fiber is now running
+#   - Back to main after first fiber yield
+#   - Fiber resumed
+#   - Fiber completed
 
 ########################################################################
 # Fibers for Asynchronous Operations
@@ -185,3 +241,8 @@ main_fiber = Fiber.new do
 end
 
 puts main_fiber.resume
+# 
+# Starting async operations:
+# First result: First operation completed
+# Second result: Second operation completed
+# All operations completed

@@ -104,7 +104,7 @@ puts laptop.summary  # MacBook Pro (ID: 101): $1299.99, 10 in stock
 
 laptop.name = "MacBook Air"
 laptop.stock = 15
-# laptop.id = 102  # This would raise an error since we only have attr_reader
+# laptop.id = 102    # This would raise an error since we only have attr_reader
 puts laptop.summary  # MacBook Air (ID: 101): $1299.99, 15 in stock
 
 ########################################################################

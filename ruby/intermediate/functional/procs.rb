@@ -94,7 +94,7 @@ operations = {
   divide: proc { |x, y| x / y },
 }
 
-puts operations[:add].call(5, 3)      # => 8
+puts operations[:add].call(5, 3)       # => 8
 puts operations[:multiply].call(5, 3)  # => 15
 
 ########################################################################

@@ -29,19 +29,25 @@ class Counter
   end
 end
 
-puts "Initial count: #{Counter.count}"  # 0
+puts "Initial count: #{Counter.count}"  
+# Initial count: 0
 
 counter1 = Counter.new
 counter2 = Counter.new
 counter3 = Counter.new
 
-puts "After creating 3 instances, count: #{Counter.count}"  # 3
-puts "Counter 1 says: #{counter1.report}"  # I'm instance #3
-puts "Counter 2 says: #{counter2.report}"  # I'm instance #3
-puts "Counter 3 says: #{counter3.report}"  # I'm instance #3
+puts "After creating 3 instances, count: #{Counter.count}"  
+# After creating 3 instances, count: 3
+puts "Counter 1 says: #{counter1.report}"  
+# Counter 1 says: I'm instance #3
+puts "Counter 2 says: #{counter2.report}"  
+# Counter 2 says: I'm instance #3
+puts "Counter 3 says: #{counter3.report}"  
+# Counter 3 says: I'm instance #3
 
 Counter.reset
-puts "After reset, count: #{Counter.count}"  # 0
+puts "After reset, count: #{Counter.count}"  
+# After reset, count: 0
 
 ########################################################################
 # Class Variables vs. Instance Variables in Class Methods
@@ -93,24 +99,31 @@ class Example
 end
 
 puts "\nClass Variables vs. Instance Variables in Class Methods:"
-puts "Class var: #{Example.class_var}"  # I'm a class variable
-puts "Class instance var: #{Example.class_instance_var}"  # I'm an instance variable of the class
+puts "Class var: #{Example.class_var}"  
+# Class var: I'm a class variable
+puts "Class instance var: #{Example.class_instance_var}"  
+# Class instance var: I'm an instance variable of the class
 
 # Change the values
 Example.change_class_var("Updated class var")
 Example.change_class_instance_var("Updated class instance var")
 
-puts "Updated class var: #{Example.class_var}"  # Updated class var
-puts "Updated class instance var: #{Example.class_instance_var}"  # Updated class instance var
+puts "Updated class var: #{Example.class_var}"  
+# Updated class var: Updated class var
+puts "Updated class instance var: #{Example.class_instance_var}"  
+# Updated class instance var: Updated class instance var
 
 # Create instance and try accessing the variables
 ex = Example.new
-puts "Instance accessing class var: #{ex.instance_access_class_var}"  # Updated class var
-puts "Instance accessing class instance var: #{ex.instance_access_class_instance_var.inspect}"  # nil
+puts "Instance accessing class var: #{ex.instance_access_class_var}"  
+# Instance accessing class var: Updated class var
+puts "Instance accessing class instance var: #{ex.instance_access_class_instance_var.inspect}"  
+# Instance accessing class instance var: nil
 
 # Set instance's own instance variable
 ex.set_instance_var("My instance var")
-puts "Instance var: #{ex.get_instance_var}"  # My instance var
+puts "Instance var: #{ex.get_instance_var}"  
+# Instance var: My instance var
 
 ########################################################################
 # Class Variables with Inheritance
@@ -146,24 +159,33 @@ class AnotherChild < Parent
 end
 
 puts "\nClass Variables with Inheritance:"
-puts "Parent class_var: #{Parent.class_var}"  # Child value
-puts "Child class_var: #{Child.class_var}"    # Child value
-puts "AnotherChild class_var: #{AnotherChild.class_var}"  # Child value
+puts "Parent class_var: #{Parent.class_var}"  
+# Parent class_var: Child value
+puts "Child class_var: #{Child.class_var}"    
+# Child class_var: Child value
+puts "AnotherChild class_var: #{AnotherChild.class_var}"  
+# AnotherChild class_var: Child value
 
 parent = Parent.new
 child = Child.new
 another = AnotherChild.new
 
-puts "Parent instance: #{parent.instance_access_class_var}"  # Child value
-puts "Child instance: #{child.instance_access_class_var}"    # Child value
-puts "Child specific: #{child.child_specific}"              # I'm a child method, and class_var is: Child value
+puts "Parent instance: #{parent.instance_access_class_var}"  
+# Parent instance: Child value
+puts "Child instance: #{child.instance_access_class_var}"    
+# Child instance: Child value
+puts "Child specific: #{child.child_specific}"              
+# Child specific: I'm a child method, and class_var is: Child value
 
 # Change from the Parent class
 Parent.change_class_var("New value from Parent")
 puts "After Parent change:"
-puts "Parent class_var: #{Parent.class_var}"        # New value from Parent
-puts "Child class_var: #{Child.class_var}"          # New value from Parent
-puts "AnotherChild class_var: #{AnotherChild.class_var}"  # New value from Parent
+puts "Parent class_var: #{Parent.class_var}"        
+# Parent class_var: New value from Parent
+puts "Child class_var: #{Child.class_var}"          
+# Child class_var: New value from Parent
+puts "AnotherChild class_var: #{AnotherChild.class_var}"  
+# AnotherChild class_var: New value from Parent
 
 ########################################################################
 # Alternatives to Class Variables
@@ -183,14 +205,18 @@ class BetterChild < BetterParent
 end
 
 puts "\nClass Instance Variables Alternative:"
-puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  # Parent value
-puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    # Child value
+puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  
+# BetterParent class_instance_var: Parent value
+puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    
+# BetterChild class_instance_var: Child value
 
 # Change from parent
 BetterParent.class_instance_var = "New Parent value"
 puts "After change:"
-puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  # New Parent value
-puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    # Child value (unchanged)
+puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  
+# BetterParent class_instance_var: New Parent value
+puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    
+# BetterChild class_instance_var: Child value (unchanged)
 
 # 2. Using a module to namespace class variables
 module CounterNamespace
@@ -210,12 +236,15 @@ module CounterNamespace
 end
 
 puts "\nNamespaced Class Variables:"
-puts "Initial count: #{CounterNamespace.count}"  # 0
+puts "Initial count: #{CounterNamespace.count}"  
+# Initial count: 0
 CounterNamespace.increment
 CounterNamespace.increment
-puts "After incrementing: #{CounterNamespace.count}"  # 2
+puts "After incrementing: #{CounterNamespace.count}"  
+# After incrementing: 2
 CounterNamespace.reset
-puts "After reset: #{CounterNamespace.count}"  # 0
+puts "After reset: #{CounterNamespace.count}"  
+# After reset: 0
 
 ########################################################################
 # When to Use Class Variables
@@ -255,17 +284,23 @@ class User
 end
 
 puts "\nPractical Class Variable Usage:"
-puts "Initial user count: #{User.user_count}"  # 0
-puts "Max login attempts: #{User.get_config(:max_login_attempts)}"  # 3
+puts "Initial user count: #{User.user_count}"  
+# Initial user count: 0
+puts "Max login attempts: #{User.get_config(:max_login_attempts)}"  
+# Max login attempts: 3
 
 user1 = User.new("alice")
 user2 = User.new("bob")
-puts "User count after creating users: #{User.user_count}"  # 2
-puts "User's max login attempts: #{user1.max_login_attempts}"  # 3
+puts "User count after creating users: #{User.user_count}"  
+# User count after creating users: 2
+puts "User's max login attempts: #{user1.max_login_attempts}"  
+# User's max login attempts: 3
 
 User.update_config(:max_login_attempts, 5)
-puts "Updated max login attempts: #{User.get_config(:max_login_attempts)}"  # 5
-puts "User's updated max login attempts: #{user1.max_login_attempts}"  # 5
+puts "Updated max login attempts: #{User.get_config(:max_login_attempts)}"  
+# Updated max login attempts: 5
+puts "User's updated max login attempts: #{user1.max_login_attempts}"  
+# User's updated max login attempts: 5
 
 ########################################################################
 # Cautions and Best Practices
@@ -316,11 +351,14 @@ end
 
 puts "\nSingleton Pattern Alternative:"
 logger = Logger.instance
-logger.log("This is an info message")  # [INFO] This is an info message
-logger.log("This is a debug message", :debug)  # Not displayed (below default level)
+logger.log("This is an info message")  
+# [INFO] This is an info message
+logger.log("This is a debug message", :debug)  
+# (No output - debug message not displayed because below default level)
 
 Logger.log_level = :debug
-logger.log("Now debug is visible", :debug)  # [DEBUG] Now debug is visible
+logger.log("Now debug is visible", :debug)  
+# [DEBUG] Now debug is visible
 
 # This would fail:
 # Logger.new  # private method `new' called

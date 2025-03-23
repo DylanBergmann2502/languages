@@ -136,7 +136,7 @@ module Utilities
 end
 
 # Call module method
-puts Utilities.say_hello  # Hello from module method
+puts Utilities.say_hello     # Hello from module method
 puts Utilities.increment(5)  # 6
 
 class Calculator
@@ -186,11 +186,11 @@ end
 
 # Methods added by include are available on instances
 report = Report.new
-puts report.format_currency(29.95)  # $29.95
+puts report.format_currency(29.95)        # $29.95
 puts report.instance_format_price(29.95)  # $29.95
 
 # Methods added by extend are available on the class
-puts PricingCalculator.format_percentage(0.25)  # 25%
+puts PricingCalculator.format_percentage(0.25)      # 25%
 puts PricingCalculator.class_format_discount(0.25)  # 25%
 
 # This would fail:

@@ -141,7 +141,7 @@ class LifecycleDemo
 end
 
 # Normal creation
-normal_obj = LifecycleDemo.new("Object 1")  # Object 1 created
+normal_obj = LifecycleDemo.new("Object 1")    # Object 1 created
 
 # Creation with finalizer
 final_obj = LifecycleDemo.create("Object 2")  # Object 2 created

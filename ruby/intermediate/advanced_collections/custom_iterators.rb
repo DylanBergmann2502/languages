@@ -17,6 +17,12 @@ end
 
 puts "\nCounting to 5:"
 count_to(5) { |n| puts "Number: #{n}" }
+# Output:
+# Number: 1
+# Number: 2
+# Number: 3
+# Number: 4
+# Number: 5
 
 # Iterator with conditional yielding
 def even_numbers_up_to(limit)
@@ -27,6 +33,12 @@ end
 
 puts "\nEven numbers up to 10:"
 even_numbers_up_to(10) { |n| puts n }
+# Output:
+# 2
+# 4
+# 6
+# 8
+# 10
 
 #################################################################
 # Custom Iterators with Local State
@@ -45,6 +57,7 @@ end
 puts "\nFirst 10 Fibonacci numbers:"
 fibonacci_sequence(10) { |n| print "#{n} " }
 puts
+# Output: 0 1 1 2 3 5 8 13 21 34 
 
 # Iterator that maintains an accumulator
 def running_sum(numbers)
@@ -59,6 +72,12 @@ puts "\nRunning sum of [1, 2, 3, 4, 5]:"
 running_sum([1, 2, 3, 4, 5]) do |number, sum|
   puts "After adding #{number}, sum is #{sum}"
 end
+# Output:
+# After adding 1, sum is 1
+# After adding 2, sum is 3
+# After adding 3, sum is 6
+# After adding 4, sum is 10
+# After adding 5, sum is 15
 
 #################################################################
 # Creating Enumerators from Scratch
@@ -76,6 +95,12 @@ begin
 rescue StopIteration
   puts "Blast off!"
 end
+# Output:
+# 5
+# 4
+# 3
+# 2
+# 1
 
 # Creating an Enumerator with Enumerator.new
 alphabet = Enumerator.new do |yielder|
@@ -84,9 +109,19 @@ end
 
 puts "\nFirst 5 letters from our alphabet Enumerator:"
 5.times { puts alphabet.next }
+# Output:
+# A
+# B
+# C
+# D
+# E
 
 puts "\nNext 3 letters:"
 3.times { puts alphabet.next }
+# Output:
+# F
+# G
+# H
 
 #################################################################
 # Using the Enumerable Module in Custom Classes
@@ -108,9 +143,18 @@ seasons = Seasons.new
 
 puts "\nSeasons in alphabetical order:"
 puts seasons.sort
+# Output:
+# Fall
+# Spring
+# Summer
+# Winter
 
 puts "\nSeasons with length > 5 characters:"
 puts seasons.select { |s| s.length > 5 }
+# Output:
+# Spring
+# Summer
+# Winter
 
 #################################################################
 # Advanced: Infinite Sequences
@@ -133,6 +177,7 @@ fibonacci = endless_fibonacci
 puts "\nFirst 8 Fibonacci numbers from infinite sequence:"
 8.times { print "#{fibonacci.next} " }
 puts
+# Output: 0 1 1 2 3 5 8 13 
 
 # Prime number generator using the Sieve of Eratosthenes approach
 def prime_generator
@@ -166,6 +211,7 @@ primes = prime_generator
 puts "\nFirst 10 prime numbers:"
 10.times { print "#{primes.next} " }
 puts
+# Output: 2 3 5 7 11 13 17 19 23 29 
 
 #################################################################
 # Custom Collection Class with Advanced Iteration
@@ -245,30 +291,40 @@ buffer = CircularBuffer.new(3)
 
 puts "Creating a buffer with capacity 3"
 puts "Initial buffer: #{buffer} (size: #{buffer.size})"
+# Output: Initial buffer: [] (size: 0)
 
 puts "Pushing 'A' into buffer"
 buffer.push('A')
 puts "Buffer: #{buffer} (size: #{buffer.size})"
+# Output: Buffer: [A] (size: 1)
 
 puts "Pushing 'B' into buffer"
 buffer.push('B')
 puts "Buffer: #{buffer} (size: #{buffer.size})"
+# Output: Buffer: [A, B] (size: 2)
 
 puts "Pushing 'C' into buffer"
 buffer.push('C')
 puts "Buffer: #{buffer} (size: #{buffer.size})"
+# Output: Buffer: [A, B, C] (size: 3)
 
 puts "Pushing 'D' into buffer (should displace 'A')"
 buffer.push('D')
 puts "Buffer: #{buffer} (size: #{buffer.size})"
+# Output: Buffer: [B, C, D] (size: 3)
 
 puts "Popping from buffer: #{buffer.pop}"
+# Output: Popping from buffer: B
 puts "Buffer: #{buffer} (size: #{buffer.size})"
+# Output: Buffer: [C, D] (size: 2)
 
 puts "Using buffer with Enumerable methods:"
 puts "Items in buffer: #{buffer.to_a.join(', ')}"
+# Output: Items in buffer: C, D
 puts "First item: #{buffer.first}"
+# Output: First item: C
 puts "Does buffer include 'C'? #{buffer.include?('C')}"
+# Output: Does buffer include 'C'? true
 
 #################################################################
 # External Iterators vs Internal Iterators
@@ -280,6 +336,7 @@ range = (1..5)
 puts "\nInternal iterator (each):"
 range.each { |i| print "#{i} " }
 puts
+# Output: 1 2 3 4 5 
 
 puts "\nExternal iterator (manual):"
 iterator = range.to_enum
@@ -287,6 +344,7 @@ until iterator.size == 0 rescue true
   print "#{iterator.next} "
 end
 puts
+# Output: 1 2 3 4 5 
 
 puts "\nExternal iterator (loop):"
 iterator = range.to_enum
@@ -296,6 +354,7 @@ rescue StopIteration
   break
 end
 puts
+# Output: 1 2 3 4 5 
 
 #################################################################
 # Lazy Evaluation with Enumerator::Lazy
@@ -321,3 +380,4 @@ result = naturals.lazy
   .take(5)                 # Take only 5 numbers
   .to_a                    # Convert to array
 puts result.join(', ')
+# Output: 36, 64, 100, 144, 196

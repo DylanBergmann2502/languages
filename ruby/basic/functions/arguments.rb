@@ -51,7 +51,7 @@ def log(message, *tags)
   puts "Tags: #{tags.join(", ")}" unless tags.empty?
 end
 
-log("Server started")                          # No tags
+log("Server started")                           # No tags
 log("User logged in", "user", "authentication") # Two tags
 
 # Using splat to explode an array into arguments
