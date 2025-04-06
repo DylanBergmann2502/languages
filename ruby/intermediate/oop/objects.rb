@@ -1,5 +1,3 @@
-# objects.rb - Understanding Ruby Objects
-
 # In Ruby, everything is an object
 # Even classes themselves are objects of the Class class
 

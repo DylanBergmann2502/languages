@@ -1,4 +1,3 @@
-# minitest.rb
 # Minitest is Ruby's built-in testing framework - simple and straightforward
 # Let's start by requiring minitest
 
