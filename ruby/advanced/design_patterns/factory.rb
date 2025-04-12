@@ -81,6 +81,17 @@ vehicles.each do |vehicle|
   puts vehicle.drive
   puts
 end
+# Output:
+# === Simple Factory Example ===
+# Type: Car, Wheels: 4
+# Driving on the road with 4 wheels
+#
+# Type: Motorcycle, Wheels: 2
+# Riding on the road with 2 wheels
+#
+# Type: Bicycle, Wheels: 2
+# Pedaling on the road with 2 wheels
+#
 
 ###########################################################################
 # Example 2: Factory Method Pattern with Creator Hierarchy
@@ -188,6 +199,26 @@ creators.each do |creator|
   document.print
   puts
 end
+# Output:
+# === Factory Method Pattern Example ===
+# === RESUME ===
+# Resume Page 1: Standard header content
+# Resume Page 2: Personal Information
+# Resume Page 3: Education
+# Resume Page 4: Work Experience
+# Resume Page 5: Skills
+# Resume Page 6: Standard footer content
+# ==============
+#
+# === REPORT ===
+# Report Page 1: Standard header content
+# Report Page 2: Executive Summary
+# Report Page 3: Data Analysis
+# Report Page 4: Findings
+# Report Page 5: Recommendations
+# Report Page 6: Standard footer content
+# ===============
+#
 
 ###########################################################################
 # Example 3: Abstract Factory Pattern
@@ -284,6 +315,16 @@ render_ui(LightThemeFactory.new)
 
 # Create UI with Dark Theme
 render_ui(DarkThemeFactory.new)
+# Output:
+# === Abstract Factory Pattern Example ===
+# Creating UI with selected theme:
+# Rendering a light-colored button
+# Rendering a light-colored text field
+#
+# Creating UI with selected theme:
+# Rendering a dark-colored button
+# Rendering a dark-colored text field
+#
 
 ###########################################################################
 # Benefits of Factory Patterns:

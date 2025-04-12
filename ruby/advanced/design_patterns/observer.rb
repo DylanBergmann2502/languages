@@ -58,6 +58,14 @@ market.add_observer(viewer3)
 # Change stock prices - this will notify all observers
 market.set_price("AAPL", 150.25)
 market.set_price("GOOGL", 2730.50)
+# Output:
+# === Using Ruby's built-in Observable ===
+# Mobile App received update - Current prices: {"AAPL"=>150.25}
+# Web Dashboard received update - Current prices: {"AAPL"=>150.25}
+# Trading Algorithm received update - Current prices: {"AAPL"=>150.25}
+# Mobile App received update - Current prices: {"AAPL"=>150.25, "GOOGL"=>2730.5}
+# Web Dashboard received update - Current prices: {"AAPL"=>150.25, "GOOGL"=>2730.5}
+# Trading Algorithm received update - Current prices: {"AAPL"=>150.25, "GOOGL"=>2730.5}
 
 # Remove an observer
 market.delete_observer(viewer3)
@@ -65,6 +73,10 @@ puts "\nRemoved Trading Algorithm observer"
 
 # Change another price - only remaining observers will be notified
 market.set_price("MSFT", 310.75)
+# Output:
+# Removed Trading Algorithm observer
+# Mobile App received update - Current prices: {"AAPL"=>150.25, "GOOGL"=>2730.5, "MSFT"=>310.75}
+# Web Dashboard received update - Current prices: {"AAPL"=>150.25, "GOOGL"=>2730.5, "MSFT"=>310.75}
 
 ###########################################################################
 # Example 2: Custom implementation of the Observer pattern
@@ -207,12 +219,29 @@ weather_station.add_observer(forecast_display)
 # Simulate weather changes
 puts "\nWeather update 1:"
 weather_station.set_measurements(25.2, 65, 1013.1)
+# Output:
+# === Using Custom Observer Implementation ===
+#
+# Weather update 1:
+# Current conditions: 25.2°C and 65% humidity
+# Avg/Max/Min temperature: 25.2°C/25.2°C/25.2°C
+# Forecast: Improving weather on the way!
 
 puts "\nWeather update 2:"
 weather_station.set_measurements(27.8, 70, 1014.2)
+# Output:
+# Weather update 2:
+# Current conditions: 27.8°C and 70% humidity
+# Avg/Max/Min temperature: 26.5°C/27.8°C/25.2°C
+# Forecast: Improving weather on the way!
 
 puts "\nWeather update 3:"
 weather_station.set_measurements(26.5, 75, 1012.5)
+# Output:
+# Weather update 3:
+# Current conditions: 26.5°C and 75% humidity
+# Avg/Max/Min temperature: 26.5°C/27.8°C/25.2°C
+# Forecast: Watch out for cooler, rainy weather
 
 # Remove an observer
 weather_station.remove_observer(forecast_display)
@@ -221,6 +250,12 @@ puts "\nRemoved forecast display observer"
 # One more update - forecast won't be displayed
 puts "\nWeather update 4:"
 weather_station.set_measurements(24.9, 80, 1011.2)
+# Output:
+# Removed forecast display observer
+#
+# Weather update 4:
+# Current conditions: 24.9°C and 80% humidity
+# Avg/Max/Min temperature: 26.1°C/27.8°C/24.9°C
 
 ###########################################################################
 # Example 3: Event-driven Observer pattern with specific events
@@ -307,12 +342,26 @@ all_news_follower.interests.each { |interest| news_agency.event_manager.subscrib
 # Publish different types of news
 puts "\nPublishing sports news:"
 news_agency.publish_sports_news("Liverpool wins Champions League")
+# Output:
+# === Event-driven Observer Pattern ===
+#
+# Publishing sports news:
+# John received sports news: Liverpool wins Champions League
+# Emily received sports news: Liverpool wins Champions League
 
 puts "\nPublishing politics news:"
 news_agency.publish_politics_news("New climate bill passes in parliament")
+# Output:
+# Publishing politics news:
+# Sarah received politics news: New climate bill passes in parliament
+# Emily received politics news: New climate bill passes in parliament
 
 puts "\nPublishing tech news:"
 news_agency.publish_tech_news("Ruby 3.2 released with improved performance")
+# Output:
+# Publishing tech news:
+# Mike received tech news: Ruby 3.2 released with improved performance
+# Emily received tech news: Ruby 3.2 released with improved performance
 
 ###########################################################################
 # Benefits of the Observer Pattern:

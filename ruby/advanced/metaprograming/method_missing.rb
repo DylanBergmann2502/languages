@@ -10,8 +10,8 @@ class Ghost
 end
 
 ghost = Ghost.new
-ghost.boo                  # You called boo with [] and a block: No
-ghost.haunt("house", 123)  # You called haunt with ["house", 123] and a block: No
+ghost.boo                   # You called boo with [] and a block: No
+ghost.haunt("house", 123)   # You called haunt with ["house", 123] and a block: No
 ghost.float { puts "Wooo" } # You called float with [] and a block: Yes
 
 ########################################################################

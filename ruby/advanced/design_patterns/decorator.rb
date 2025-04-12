@@ -56,17 +56,17 @@ end
 puts "=== Basic Decorator Pattern Example ==="
 simple = ConcreteComponent.new
 puts "Client: Using the simple component:"
-puts simple.operation
+puts simple.operation  # ConcreteComponent
 
 # Decorate the simple component with A
 decorator1 = ConcreteDecoratorA.new(simple)
 puts "\nClient: Now I've got a decorated component with A:"
-puts decorator1.operation
+puts decorator1.operation  # ConcreteDecoratorA(ConcreteComponent)
 
 # Decorate the already decorated component with B
 decorator2 = ConcreteDecoratorB.new(decorator1)
 puts "\nClient: Now I've got a component decorated with A and B:"
-puts decorator2.operation
+puts decorator2.operation  # ConcreteDecoratorB(ConcreteDecoratorA(ConcreteComponent))
 
 ###########################################################################
 # Example 2: Text Formatting with Decorators
@@ -123,24 +123,24 @@ end
 # Client code
 puts "\n=== Text Formatting Example ==="
 plain_text = PlainText.new("Hello, World!")
-puts "Plain text: #{plain_text.text}"
+puts "Plain text: #{plain_text.text}"  # Plain text: Hello, World!
 
 bold_text = BoldText.new(plain_text)
-puts "Bold text: #{bold_text.text}"
+puts "Bold text: #{bold_text.text}"  # Bold text: <b>Hello, World!</b>
 
 italic_text = ItalicText.new(plain_text)
-puts "Italic text: #{italic_text.text}"
+puts "Italic text: #{italic_text.text}"  # Italic text: <i>Hello, World!</i>
 
 # Combining decorators - note how we can stack them in any order
 bold_italic_text = BoldText.new(ItalicText.new(plain_text))
-puts "Bold and italic: #{bold_italic_text.text}"
+puts "Bold and italic: #{bold_italic_text.text}"  # Bold and italic: <b><i>Hello, World!</i></b>
 
 italic_bold_text = ItalicText.new(BoldText.new(plain_text))
-puts "Italic and bold: #{italic_bold_text.text}"
+puts "Italic and bold: #{italic_bold_text.text}"  # Italic and bold: <i><b>Hello, World!</b></i>
 
 # Adding more decorators to the stack
 all_decorated_text = UnderlineText.new(BoldText.new(ItalicText.new(plain_text)))
-puts "Underlined, bold, and italic: #{all_decorated_text.text}"
+puts "Underlined, bold, and italic: #{all_decorated_text.text}"  # Underlined, bold, and italic: <u><b><i>Hello, World!</i></b></u>
 
 ###########################################################################
 # Example 3: Real-world example - Coffee Shop
@@ -244,18 +244,18 @@ puts "\n=== Coffee Shop Example ==="
 
 # Order a plain espresso
 beverage = Espresso.new
-puts "#{beverage.description}: $#{format("%.2f", beverage.cost)}"
+puts "#{beverage.description}: $#{format("%.2f", beverage.cost)}"  # Espresso: $1.99
 
 # Order a Dark Roast with double Mocha and Whip
 beverage2 = DarkRoast.new
 beverage2 = Mocha.new(beverage2)
 beverage2 = Mocha.new(beverage2)
 beverage2 = Whip.new(beverage2)
-puts "#{beverage2.description}: $#{format("%.2f", beverage2.cost)}"
+puts "#{beverage2.description}: $#{format("%.2f", beverage2.cost)}"  # Dark Roast Coffee, Mocha, Mocha, Whip: $1.49
 
 # Order a House Blend with Soy, Mocha, and Whip
 beverage3 = Soy.new(Mocha.new(Whip.new(HouseBlend.new)))
-puts "#{beverage3.description}: $#{format("%.2f", beverage3.cost)}"
+puts "#{beverage3.description}: $#{format("%.2f", beverage3.cost)}"  # House Blend Coffee, Whip, Mocha, Soy: $1.34
 
 ###########################################################################
 # Benefits of the Decorator Pattern:

@@ -34,9 +34,13 @@ end
 # Notice we don't use .new - we use .instance instead
 config1 = ConfigurationManager.instance
 config2 = ConfigurationManager.instance
+# Output:
+# Initializing ConfigurationManager
 
 # Verify both references point to the same object
 puts "Are config1 and config2 the same object? #{config1.object_id == config2.object_id}"
+# Output:
+# Are config1 and config2 the same object? true
 
 # Modify settings through one reference
 config1.settings[:environment] = "production"
@@ -44,6 +48,11 @@ config1.settings[:environment] = "production"
 # Display settings through the other reference - they reflect the change
 puts "\nSettings after modification:"
 config2.display_settings
+# Output:
+# Settings after modification:
+# host: localhost
+# port: 3000
+# environment: production
 
 ###########################################################################
 # Example 2: Implementing the Singleton pattern manually (without the module)
@@ -80,9 +89,13 @@ end
 # Create logger instances
 logger1 = Logger.instance
 logger2 = Logger.instance
+# Output:
+# Initializing Logger
 
 # Verify both references point to the same object
 puts "\nAre logger1 and logger2 the same object? #{logger1.object_id == logger2.object_id}"
+# Output:
+# Are logger1 and logger2 the same object? true
 
 # Add log entries through different references
 logger1.log("Application started")
@@ -91,6 +104,11 @@ logger1.log("Query executed")
 
 # Display all logs
 logger1.display_log
+# Output:
+# Log entries:
+# [2023-04-12 15:42:30 +0000] Application started
+# [2023-04-12 15:42:30 +0000] User logged in
+# [2023-04-12 15:42:30 +0000] Query executed
 
 ###########################################################################
 # Example 3: Thread-safe singleton implementation
@@ -140,12 +158,28 @@ threads = []
     puts "Thread #{i}: #{db.connect}"
   end
 end
+# Output:
+# Testing thread-safety:
+#
+# Initializing DatabaseConnection
+# Thread 0: 47321784525360
+# Thread 1: 47321784525360
+# Thread 2: 47321784525360
+# Thread 3: 47321784525360
+# Thread 4: 47321784525360
+# Thread 0: Connected to database
+# Thread 1: Already connected
+# Thread 2: Already connected
+# Thread 3: Already connected
+# Thread 4: Already connected
 
 threads.each(&:join)
 
 # Execute a query through the singleton
 db = DatabaseConnection.instance
 puts db.execute_query("SELECT * FROM users")
+# Output:
+# Executing: SELECT * FROM users
 
 ###########################################################################
 # Common use cases for Singleton:
