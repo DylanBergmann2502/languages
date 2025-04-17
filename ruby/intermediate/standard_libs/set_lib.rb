@@ -1,7 +1,7 @@
 # Set is a collection of unordered values with no duplicates
 # It provides methods for set-theoretic operations and is implemented using a Hash
 # First, let's require the set library
-require 'set'
+require "set"
 
 ########################################################################
 # Creating Sets
@@ -217,22 +217,22 @@ end
 
 # Try to use SortedSet if available
 begin
-  require 'set'
-  
+  require "set"
+
   # Create a SortedSet (elements are kept in sorted order)
   sorted_set = SortedSet.new([3, 1, 4, 1, 5, 9, 2, 6])
   puts "SortedSet: #{sorted_set.inspect}" # #<SortedSet: {1, 2, 3, 4, 5, 6, 9}>
-  
+
   # SortedSet maintains order when adding elements
   sorted_set.add(7)
   puts "SortedSet after adding 7: #{sorted_set.inspect}" # #<SortedSet: {1, 2, 3, 4, 5, 6, 7, 9}>
-  
+
   # Alternative for newer Ruby versions
   puts "Note: SortedSet is deprecated in newer Ruby versions"
 rescue => e
   # Handle the case where SortedSet is not available
   puts "SortedSet is not available or deprecated:"
-  
+
   # Alternative using regular Set and sorting when needed
   set = Set[3, 1, 4, 1, 5, 9, 2, 6]
   sorted_elements = set.to_a.sort
@@ -257,18 +257,18 @@ common_elements = Set.new(array1) & Set.new(array2)
 puts "Common elements between arrays: #{common_elements.to_a.inspect}" # [3, 4, 5]
 
 # 3. Checking for uniqueness in constant time
-set = Set.new(['apple', 'banana', 'orange'])
+set = Set.new(["apple", "banana", "orange"])
 
 def contains_fruit?(set, fruit)
   set.include?(fruit) # O(1) operation, much faster than array.include? for large collections
 end
 
-puts "Contains apple? #{contains_fruit?(set, 'apple')}" # true
-puts "Contains grape? #{contains_fruit?(set, 'grape')}" # false
+puts "Contains apple? #{contains_fruit?(set, "apple")}" # true
+puts "Contains grape? #{contains_fruit?(set, "grape")}" # false
 
 # 4. Set-based operations on tags
-post1_tags = Set['ruby', 'programming', 'web']
-post2_tags = Set['ruby', 'rails', 'web']
+post1_tags = Set["ruby", "programming", "web"]
+post2_tags = Set["ruby", "rails", "web"]
 
 all_tags = post1_tags | post2_tags  # Union
 common_tags = post1_tags & post2_tags  # Intersection

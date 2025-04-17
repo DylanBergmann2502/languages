@@ -2,7 +2,7 @@
 # The Digest library provides a framework for message digest libraries
 
 # Require the digest library
-require 'digest'
+require "digest"
 
 puts "# Basic Usage of Digest Library"
 puts "==============================="
@@ -83,10 +83,10 @@ puts "Hexdigest (string): #{hex}"
 
 # Digest - returns the hash value as a binary string
 binary = digest.digest
-puts "Binary digest (showing first 8 bytes): #{binary[0..7].unpack('H*').first}"
+puts "Binary digest (showing first 8 bytes): #{binary[0..7].unpack("H*").first}"
 
 # Base64 digest - needs additional conversion
-require 'base64'
+require "base64"
 base64 = Base64.strict_encode64(digest.digest)
 puts "Base64 digest: #{base64}"
 
@@ -97,8 +97,8 @@ puts "\n# File Digests"
 puts "============="
 
 # Create a temporary file for demonstration
-require 'tempfile'
-temp_file = Tempfile.new('digest_demo')
+require "tempfile"
+temp_file = Tempfile.new("digest_demo")
 temp_file.write("This is some test content for our digest example.")
 temp_file.close
 
@@ -124,7 +124,7 @@ puts "\n# Practical Example: Verifying File Integrity"
 puts "==========================================="
 
 # Create another temporary file
-integrity_file = Tempfile.new('integrity_check')
+integrity_file = Tempfile.new("integrity_check")
 integrity_file.write("Important data that should not be tampered with")
 integrity_file.close
 
@@ -135,15 +135,15 @@ puts "Original file hash: #{original_hash}"
 # Simulate file verification
 verified_hash = Digest::SHA256.file(integrity_file.path).hexdigest
 is_verified = verified_hash == original_hash
-puts "Verification result: #{is_verified ? 'File is intact' : 'File has been modified'}"
+puts "Verification result: #{is_verified ? "File is intact" : "File has been modified"}"
 
 # Simulate file tampering
-File.open(integrity_file.path, 'a') { |f| f.write("\nSomeone tampered with this file!") }
+File.open(integrity_file.path, "a") { |f| f.write("\nSomeone tampered with this file!") }
 
 # Verify again after tampering
 tampered_hash = Digest::SHA256.file(integrity_file.path).hexdigest
 is_verified = tampered_hash == original_hash
-puts "After tampering, verification result: #{is_verified ? 'File is intact' : 'File has been modified'}"
+puts "After tampering, verification result: #{is_verified ? "File is intact" : "File has been modified"}"
 puts "Tampered file hash: #{tampered_hash}"
 
 # Clean up
@@ -184,7 +184,7 @@ digest3 = Digest::SHA256.hexdigest("differentpassword")
 puts "Regular comparison (==): #{digest1 == digest2}"
 
 # Using secure compare
-require 'openssl'
+require "openssl"
 puts "Secure comparison (digest1 vs digest2): #{OpenSSL.secure_compare(digest1, digest2)}"
 puts "Secure comparison (digest1 vs digest3): #{OpenSSL.secure_compare(digest1, digest3)}"
 

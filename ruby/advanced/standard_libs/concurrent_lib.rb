@@ -1,6 +1,6 @@
 # Concurrent Ruby provides tools for concurrent and parallel programming
 # It helps manage the complexity of multi-threaded applications
-require 'concurrent'
+require "concurrent"
 
 puts "=== Basic Futures ==="
 # A Future represents a computation that hasn't completed yet
@@ -124,7 +124,7 @@ sleep(0.5)
 puts "Agent value: #{agent.value.inspect}"
 
 puts "\n=== Dataflow Variables ==="
-# Dataflow programming model where operations execute 
+# Dataflow programming model where operations execute
 # when their inputs become available
 
 a = Concurrent::dataflow { 2 }
@@ -192,7 +192,7 @@ timer.shutdown
 puts "\n=== Observer Pattern ==="
 # Thread-safe implementation of the observer pattern using Ruby's Observable
 
-require 'observer'
+require "observer"
 
 class Counter
   include Observable
@@ -200,7 +200,7 @@ class Counter
   def initialize
     @count = 0
   end
-  
+
   def increment
     @count += 1
     changed
@@ -235,7 +235,7 @@ urls = [
   "https://example.com/page2",
   "https://example.com/page3",
   "https://example.com/page4",
-  "https://example.com/page5"
+  "https://example.com/page5",
 ]
 
 # Using a thread pool to limit concurrency

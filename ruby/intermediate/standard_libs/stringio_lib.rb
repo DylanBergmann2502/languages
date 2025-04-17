@@ -1,6 +1,6 @@
 # StringIO allows you to treat strings like IO objects
 # It's useful for testing, capturing output, or working with string data as streams
-require 'stringio'
+require "stringio"
 
 ########################################################################
 # Creating a StringIO object
@@ -140,7 +140,7 @@ csv_data = "name,age,city\nAlice,30,New York\nBob,25,San Francisco"
 csv_io = StringIO.new(csv_data)
 
 csv_io.each_line do |line|
-  fields = line.chomp.split(',')
+  fields = line.chomp.split(",")
   puts "Fields: #{fields.inspect}"
 end
 # Fields: ["name", "age", "city"]

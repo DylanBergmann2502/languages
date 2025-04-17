@@ -1,7 +1,7 @@
 # ERB (Embedded Ruby) is a templating system that allows Ruby code to be embedded within text files.
 # It's commonly used for generating HTML, XML, and other text-based formats.
 
-require 'erb'
+require "erb"
 
 ########################################################################
 # Basic ERB syntax
@@ -82,7 +82,7 @@ trim_template = <<-TEMPLATE
 TEMPLATE
 
 puts "\nTrim mode '-':"
-puts ERB.new(trim_template, trim_mode: '-').result(binding)
+puts ERB.new(trim_template, trim_mode: "-").result(binding)
 
 # Trim mode '>' omits blank lines
 omit_template = <<-TEMPLATE
@@ -96,7 +96,7 @@ omit_template = <<-TEMPLATE
 TEMPLATE
 
 puts "\nTrim mode '>':"
-puts ERB.new(omit_template, trim_mode: '>').result(binding)
+puts ERB.new(omit_template, trim_mode: ">").result(binding)
 
 ########################################################################
 # Safe level
@@ -123,10 +123,10 @@ Status: <%= status %>
 Points: <%= points %>
 TEMPLATE
 
-File.write('template.erb', template_file_content)
+File.write("template.erb", template_file_content)
 
 # Reading from a template file
-template_from_file = File.read('template.erb')
+template_from_file = File.read("template.erb")
 renderer = ERB.new(template_from_file)
 
 username = "johndoe"
@@ -170,43 +170,43 @@ puts html_output.split("\n")[0..5].join("\n") + "\n..."
 # Advanced: Custom ERB helpers and encapsulation
 
 class TemplateRenderer
- def initialize(template)
-   @template = ERB.new(template)
-   @data = {}
- end
- 
- def set(key, value)
-   @data[key] = value
- end
- 
- def render
-   # Create a binding in this instance's context
-   b = binding
-   
-   # Define local variables from @data
-   @data.each do |key, value|
-     b.local_variable_set(key, value)
-   end
-   
-   @template.result(b)
- end
- 
- # Helper methods available in templates
- def format_date(date)
-   date.strftime("%B %d, %Y")
- end
- 
- def escape_html(text)
-   text.to_s.gsub(/[&<>"']/) do |char|
-     case char
-     when '&' then '&amp;'
-     when '<' then '&lt;'
-     when '>' then '&gt;'
-     when '"' then '&quot;'
-     when "'" then '&#39;'
-     end
-   end
- end
+  def initialize(template)
+    @template = ERB.new(template)
+    @data = {}
+  end
+
+  def set(key, value)
+    @data[key] = value
+  end
+
+  def render
+    # Create a binding in this instance's context
+    b = binding
+
+    # Define local variables from @data
+    @data.each do |key, value|
+      b.local_variable_set(key, value)
+    end
+
+    @template.result(b)
+  end
+
+  # Helper methods available in templates
+  def format_date(date)
+    date.strftime("%B %d, %Y")
+  end
+
+  def escape_html(text)
+    text.to_s.gsub(/[&<>"']/) do |char|
+      case char
+      when "&" then "&amp;"
+      when "<" then "&lt;"
+      when ">" then "&gt;"
+      when '"' then "&quot;"
+      when "'" then "&#39;"
+      end
+    end
+  end
 end
 
 template = <<-TEMPLATE
@@ -226,4 +226,4 @@ puts "\nCustom renderer output:"
 puts renderer.render
 
 # Cleaning up the template file
-File.delete('template.erb') if File.exist?('template.erb')
+File.delete("template.erb") if File.exist?("template.erb")

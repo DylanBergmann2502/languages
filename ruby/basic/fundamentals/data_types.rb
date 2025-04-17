@@ -23,7 +23,7 @@ puts 5 ** 3         # 125 (exponentiation)
 ########################################################################
 # Strings: Sequences of characters
 single_quoted = "Hello"
-double_quoted = 'World'
+double_quoted = "World"
 
 puts single_quoted + " " + double_quoted  # Hello World
 

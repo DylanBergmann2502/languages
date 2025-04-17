@@ -1,5 +1,5 @@
 # Ruby's Logger - A flexible logging utility
-require 'logger'
+require "logger"
 
 #################################################################
 # Basic Usage
@@ -11,7 +11,7 @@ stdout_logger = Logger.new(STDOUT)
 stdout_logger.info("This message goes to the console")
 
 # Creating a logger that writes to a file
-file_logger = Logger.new('application.log')
+file_logger = Logger.new("application.log")
 file_logger.info("This message goes to application.log")
 
 #################################################################
@@ -60,13 +60,13 @@ stdout_logger.info("This message has no timestamp or severity")
 # Custom formatter with colored output for different severity levels
 stdout_logger.formatter = proc do |severity, datetime, progname, msg|
   color = case severity
-  when "DEBUG" then "\e[34m" # blue
-  when "INFO"  then "\e[32m" # green
-  when "WARN"  then "\e[33m" # yellow
-  when "ERROR" then "\e[31m" # red
-  when "FATAL" then "\e[35m" # magenta
-  else "\e[37m" # white
-  end
+    when "DEBUG" then "\e[34m" # blue
+    when "INFO" then "\e[32m" # green
+    when "WARN" then "\e[33m" # yellow
+    when "ERROR" then "\e[31m" # red
+    when "FATAL" then "\e[35m" # magenta
+    else "\e[37m" # white
+    end
   reset_color = "\e[0m"
   "#{color}[#{datetime}] #{severity} - #{msg}#{reset_color}\n"
 end
@@ -79,11 +79,11 @@ stdout_logger.error("This message is red")
 # For production applications, you'll want log rotation to manage file sizes
 
 # Create a logger with age-based rotation (daily logs for 7 days)
-daily_logger = Logger.new('daily.log', 'daily', 7)
+daily_logger = Logger.new("daily.log", "daily", 7)
 daily_logger.info("This goes into today's daily log file")
 
 # Create a logger with size-based rotation (5 files of 1MB each)
-size_logger = Logger.new('size.log', 5, 1024 * 1024)
+size_logger = Logger.new("size.log", 5, 1024 * 1024)
 size_logger.info("This message is part of a size-rotated log")
 
 #################################################################
@@ -92,7 +92,7 @@ size_logger.info("This message is part of a size-rotated log")
 
 # Log to both console and file
 $multi_logger = Logger.new(STDOUT)
-$file_logger = Logger.new('application.log')
+$file_logger = Logger.new("application.log")
 
 # When we want to log a message to both
 def log_everywhere(message, severity = :info)
@@ -127,11 +127,11 @@ class CustomLogger < Logger
     end
     self.level = INFO
   end
-  
+
   def startup_message
     info("Application starting up...")
   end
-  
+
   def shutdown_message
     info("Application shutting down...")
   end
@@ -147,10 +147,10 @@ custom_logger.shutdown_message
 # Logger is thread-safe by default
 
 # In a multi-threaded application:
-require 'thread'
+require "thread"
 
 threads = []
-logger = Logger.new('threaded.log')
+logger = Logger.new("threaded.log")
 
 3.times do |i|
   threads << Thread.new do
@@ -169,7 +169,7 @@ puts "All threads have completed logging"
 puts "\nCleaning up log files..."
 
 # List of files to clean up
-log_files = ['application.log', 'daily.log', 'size.log', 'threaded.log']
+log_files = ["application.log", "daily.log", "size.log", "threaded.log"]
 
 # Delete each file if it exists
 log_files.each do |file|

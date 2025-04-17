@@ -1,7 +1,7 @@
 # SecureRandom is a library for generating secure random numbers and strings
 # It's used for cryptographic purposes where true randomness is important
 # Let's require the library first
-require 'securerandom'
+require "securerandom"
 
 ########################################################################
 # Generating random bytes
@@ -12,7 +12,7 @@ random_bytes = SecureRandom.bytes(8)
 puts "Random bytes: #{random_bytes.inspect}"
 
 # Convert to hex for readable representation
-puts "As hex: #{random_bytes.unpack('H*')[0]}"
+puts "As hex: #{random_bytes.unpack("H*")[0]}"
 
 # Since these are raw bytes, they may include unprintable characters
 puts "Byte values: #{random_bytes.bytes}"
@@ -46,7 +46,7 @@ is_valid_base64 = base64_string.chars.all? { |c| c =~ /[A-Za-z0-9+\/=]/ }
 puts "Is valid base64? #{is_valid_base64}" # true
 
 # Converting bytes to base64 manually (for comparison)
-manual_base64 = [SecureRandom.bytes(8)].pack('m0')
+manual_base64 = [SecureRandom.bytes(8)].pack("m0")
 puts "Manually encoded base64: #{manual_base64}"
 
 ########################################################################
@@ -134,7 +134,7 @@ puts "Unique filename: #{filename}"
 # 5. Generate a reset password token with expiration
 reset_token = {
   token: SecureRandom.urlsafe_base64(32),
-  expires_at: Time.now + 3600 # 1 hour from now
+  expires_at: Time.now + 3600, # 1 hour from now
 }
 puts "Reset password token: #{reset_token[:token]}"
 puts "Expires at: #{reset_token[:expires_at]}"
@@ -144,7 +144,7 @@ puts "Expires at: #{reset_token[:expires_at]}"
 # SecureRandom uses OS-provided secure RNG mechanisms
 # It's slower but more secure than regular random
 
-require 'benchmark'
+require "benchmark"
 
 # Compare speed of SecureRandom.hex vs Random.hex
 n = 1000
@@ -152,10 +152,10 @@ Benchmark.bm(20) do |x|
   x.report("SecureRandom.hex:") do
     n.times { SecureRandom.hex(16) }
   end
-  
+
   x.report("Random bytes to hex:") do
     random = Random.new
-    n.times { random.bytes(16).unpack('H*')[0] }
+    n.times { random.bytes(16).unpack("H*")[0] }
   end
 end
 

@@ -1,4 +1,4 @@
-require 'forwardable'
+require "forwardable"
 
 ########################################################################
 # Forwardable is a module that provides delegation of specified methods
@@ -17,12 +17,12 @@ class Stack
   def initialize
     @items = []
   end
-  
+
   # Delegate specific methods to the @items array
   # This creates methods in Stack that call the same methods on @items
   def_delegator :@items, :push, :add
   def_delegator :@items, :pop, :remove
-  
+
   # We can delegate multiple methods at once
   def_delegators :@items, :size, :empty?, :clear
 end
@@ -51,34 +51,34 @@ puts "Empty after clear? #{stack.empty?}" # true
 
 class Person
   extend Forwardable
-  
+
   def initialize(name)
     @name = name
     @address = Address.new("123 Ruby Lane")
   end
-  
+
   # Delegate to an instance variable
   def_delegators :@address, :street, :city, :to_s
-  
+
   # We can also delegate to methods
   def contact_info
     "Contact information"
   end
-  
+
   def_delegator :contact_info, :to_s, :contact_summary
 end
 
 class Address
   attr_reader :street
-  
+
   def initialize(street)
     @street = street
   end
-  
+
   def city
     "Ruby City"
   end
-  
+
   def to_s
     "#{street}, #{city}"
   end
@@ -96,7 +96,7 @@ puts person.contact_summary # "Contact information"
 
 # Rather than using require 'singleton_forwardable',
 # SingleForwardable is actually part of the forwardable library
-require 'forwardable'
+require "forwardable"
 
 string = "Hello, World!".dup
 string.extend SingleForwardable
@@ -112,7 +112,7 @@ puts string.backwards  # "!dlroW ,olleH"
 
 class User
   attr_accessor :name, :email
-  
+
   def initialize(name, email)
     @name = name
     @email = email
@@ -124,13 +124,13 @@ class UserRepository
     # Simulate database lookup
     User.new("User #{id}", "user#{id}@example.com")
   end
-  
+
   def save(user)
     # Simulate saving to database
     puts "Saved user: #{user.name}"
     true
   end
-  
+
   def delete(id)
     # Simulate deletion
     puts "Deleted user #{id}"
@@ -140,17 +140,17 @@ end
 
 class UserService
   extend Forwardable
-  
+
   def initialize
     @repository = UserRepository.new
   end
-  
+
   # Delegate methods to the repository with same names
   def_delegators :@repository, :find, :save
-  
+
   # Delegate with a different name
   def_delegator :@repository, :delete, :remove_user
-  
+
   # Add custom logic around some operations
   def update(id, attributes)
     user = find(id)
@@ -165,7 +165,7 @@ service = UserService.new
 user = service.find(1)
 puts "Found user: #{user.name}, #{user.email}"
 
-service.update(1, {name: "Updated User", email: "updated@example.com"})
+service.update(1, { name: "Updated User", email: "updated@example.com" })
 service.remove_user(1)
 
 ########################################################################
@@ -177,17 +177,17 @@ service.remove_user(1)
 # 3. Method visibility: All delegated methods become public
 
 # Benchmark comparing direct method calls vs. delegation
-require 'benchmark'
+require "benchmark"
 
 class DirectAccess
   def initialize
     @array = []
   end
-  
+
   def push(item)
     @array.push(item)
   end
-  
+
   def pop
     @array.pop
   end
@@ -195,11 +195,11 @@ end
 
 class DelegatedAccess
   extend Forwardable
-  
+
   def initialize
     @array = []
   end
-  
+
   def_delegators :@array, :push, :pop
 end
 
@@ -214,7 +214,7 @@ Benchmark.bm do |x|
     end
     n.times { direct.pop }
   end
-  
+
   x.report("Delegated:") do
     n.times do |i|
       delegated.push(i)

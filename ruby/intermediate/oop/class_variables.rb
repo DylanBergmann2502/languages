@@ -29,24 +29,24 @@ class Counter
   end
 end
 
-puts "Initial count: #{Counter.count}"  
+puts "Initial count: #{Counter.count}"
 # Initial count: 0
 
 counter1 = Counter.new
 counter2 = Counter.new
 counter3 = Counter.new
 
-puts "After creating 3 instances, count: #{Counter.count}"  
+puts "After creating 3 instances, count: #{Counter.count}"
 # After creating 3 instances, count: 3
-puts "Counter 1 says: #{counter1.report}"  
+puts "Counter 1 says: #{counter1.report}"
 # Counter 1 says: I'm instance #3
-puts "Counter 2 says: #{counter2.report}"  
+puts "Counter 2 says: #{counter2.report}"
 # Counter 2 says: I'm instance #3
-puts "Counter 3 says: #{counter3.report}"  
+puts "Counter 3 says: #{counter3.report}"
 # Counter 3 says: I'm instance #3
 
 Counter.reset
-puts "After reset, count: #{Counter.count}"  
+puts "After reset, count: #{Counter.count}"
 # After reset, count: 0
 
 ########################################################################
@@ -99,30 +99,30 @@ class Example
 end
 
 puts "\nClass Variables vs. Instance Variables in Class Methods:"
-puts "Class var: #{Example.class_var}"  
+puts "Class var: #{Example.class_var}"
 # Class var: I'm a class variable
-puts "Class instance var: #{Example.class_instance_var}"  
+puts "Class instance var: #{Example.class_instance_var}"
 # Class instance var: I'm an instance variable of the class
 
 # Change the values
 Example.change_class_var("Updated class var")
 Example.change_class_instance_var("Updated class instance var")
 
-puts "Updated class var: #{Example.class_var}"  
+puts "Updated class var: #{Example.class_var}"
 # Updated class var: Updated class var
-puts "Updated class instance var: #{Example.class_instance_var}"  
+puts "Updated class instance var: #{Example.class_instance_var}"
 # Updated class instance var: Updated class instance var
 
 # Create instance and try accessing the variables
 ex = Example.new
-puts "Instance accessing class var: #{ex.instance_access_class_var}"  
+puts "Instance accessing class var: #{ex.instance_access_class_var}"
 # Instance accessing class var: Updated class var
-puts "Instance accessing class instance var: #{ex.instance_access_class_instance_var.inspect}"  
+puts "Instance accessing class instance var: #{ex.instance_access_class_instance_var.inspect}"
 # Instance accessing class instance var: nil
 
 # Set instance's own instance variable
 ex.set_instance_var("My instance var")
-puts "Instance var: #{ex.get_instance_var}"  
+puts "Instance var: #{ex.get_instance_var}"
 # Instance var: My instance var
 
 ########################################################################
@@ -159,32 +159,32 @@ class AnotherChild < Parent
 end
 
 puts "\nClass Variables with Inheritance:"
-puts "Parent class_var: #{Parent.class_var}"  
+puts "Parent class_var: #{Parent.class_var}"
 # Parent class_var: Child value
-puts "Child class_var: #{Child.class_var}"    
+puts "Child class_var: #{Child.class_var}"
 # Child class_var: Child value
-puts "AnotherChild class_var: #{AnotherChild.class_var}"  
+puts "AnotherChild class_var: #{AnotherChild.class_var}"
 # AnotherChild class_var: Child value
 
 parent = Parent.new
 child = Child.new
 another = AnotherChild.new
 
-puts "Parent instance: #{parent.instance_access_class_var}"  
+puts "Parent instance: #{parent.instance_access_class_var}"
 # Parent instance: Child value
-puts "Child instance: #{child.instance_access_class_var}"    
+puts "Child instance: #{child.instance_access_class_var}"
 # Child instance: Child value
-puts "Child specific: #{child.child_specific}"              
+puts "Child specific: #{child.child_specific}"
 # Child specific: I'm a child method, and class_var is: Child value
 
 # Change from the Parent class
 Parent.change_class_var("New value from Parent")
 puts "After Parent change:"
-puts "Parent class_var: #{Parent.class_var}"        
+puts "Parent class_var: #{Parent.class_var}"
 # Parent class_var: New value from Parent
-puts "Child class_var: #{Child.class_var}"          
+puts "Child class_var: #{Child.class_var}"
 # Child class_var: New value from Parent
-puts "AnotherChild class_var: #{AnotherChild.class_var}"  
+puts "AnotherChild class_var: #{AnotherChild.class_var}"
 # AnotherChild class_var: New value from Parent
 
 ########################################################################
@@ -205,17 +205,17 @@ class BetterChild < BetterParent
 end
 
 puts "\nClass Instance Variables Alternative:"
-puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  
+puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"
 # BetterParent class_instance_var: Parent value
-puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    
+puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"
 # BetterChild class_instance_var: Child value
 
 # Change from parent
 BetterParent.class_instance_var = "New Parent value"
 puts "After change:"
-puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"  
+puts "BetterParent class_instance_var: #{BetterParent.class_instance_var}"
 # BetterParent class_instance_var: New Parent value
-puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"    
+puts "BetterChild class_instance_var: #{BetterChild.class_instance_var}"
 # BetterChild class_instance_var: Child value (unchanged)
 
 # 2. Using a module to namespace class variables
@@ -236,14 +236,14 @@ module CounterNamespace
 end
 
 puts "\nNamespaced Class Variables:"
-puts "Initial count: #{CounterNamespace.count}"  
+puts "Initial count: #{CounterNamespace.count}"
 # Initial count: 0
 CounterNamespace.increment
 CounterNamespace.increment
-puts "After incrementing: #{CounterNamespace.count}"  
+puts "After incrementing: #{CounterNamespace.count}"
 # After incrementing: 2
 CounterNamespace.reset
-puts "After reset: #{CounterNamespace.count}"  
+puts "After reset: #{CounterNamespace.count}"
 # After reset: 0
 
 ########################################################################
@@ -284,22 +284,22 @@ class User
 end
 
 puts "\nPractical Class Variable Usage:"
-puts "Initial user count: #{User.user_count}"  
+puts "Initial user count: #{User.user_count}"
 # Initial user count: 0
-puts "Max login attempts: #{User.get_config(:max_login_attempts)}"  
+puts "Max login attempts: #{User.get_config(:max_login_attempts)}"
 # Max login attempts: 3
 
 user1 = User.new("alice")
 user2 = User.new("bob")
-puts "User count after creating users: #{User.user_count}"  
+puts "User count after creating users: #{User.user_count}"
 # User count after creating users: 2
-puts "User's max login attempts: #{user1.max_login_attempts}"  
+puts "User's max login attempts: #{user1.max_login_attempts}"
 # User's max login attempts: 3
 
 User.update_config(:max_login_attempts, 5)
-puts "Updated max login attempts: #{User.get_config(:max_login_attempts)}"  
+puts "Updated max login attempts: #{User.get_config(:max_login_attempts)}"
 # Updated max login attempts: 5
-puts "User's updated max login attempts: #{user1.max_login_attempts}"  
+puts "User's updated max login attempts: #{user1.max_login_attempts}"
 # User's updated max login attempts: 5
 
 ########################################################################
@@ -351,13 +351,13 @@ end
 
 puts "\nSingleton Pattern Alternative:"
 logger = Logger.instance
-logger.log("This is an info message")  
+logger.log("This is an info message")
 # [INFO] This is an info message
-logger.log("This is a debug message", :debug)  
+logger.log("This is a debug message", :debug)
 # (No output - debug message not displayed because below default level)
 
 Logger.log_level = :debug
-logger.log("Now debug is visible", :debug)  
+logger.log("Now debug is visible", :debug)
 # [DEBUG] Now debug is visible
 
 # This would fail:

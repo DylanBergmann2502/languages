@@ -12,7 +12,7 @@ puts "Hello, #{name}!"  # Hello, Ruby!
 
 ########################################################################
 # Ruby has both single and double quotes for strings
-puts 'Hello, World!'    # Single quotes
+puts "Hello, World!"    # Single quotes
 puts "Hello, World!"    # Double quotes
 
 # The difference is that double quotes allow for escape sequences and interpolation

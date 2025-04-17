@@ -1,7 +1,7 @@
 # Ruby provides several classes for working with dates and times
 # The main classes are: Time, Date, DateTime, and since Ruby 2.4, a module called DateAndTime::Calculations
-require 'time'
-require 'date'
+require "time"
+require "date"
 
 ###########################################################################
 # Time class - built into Ruby's core
@@ -46,8 +46,8 @@ puts "\n=== Time formatting ==="
 puts "ISO 8601: #{t.iso8601}"
 puts "RFC 2822: #{t.rfc2822}"
 puts "String: #{t.to_s}"
-puts "Custom format: #{t.strftime('%Y-%m-%d %H:%M:%S %Z')}"
-puts "Custom format (day name): #{t.strftime('%A, %B %d, %Y')}"
+puts "Custom format: #{t.strftime("%Y-%m-%d %H:%M:%S %Z")}"
+puts "Custom format (day name): #{t.strftime("%A, %B %d, %Y")}"
 
 ###########################################################################
 # Time arithmetic
@@ -97,7 +97,7 @@ puts "Day of year: #{today.yday}" # 1-366
 
 # Date formatting
 puts "String: #{today.to_s}"
-puts "Custom format: #{today.strftime('%B %d, %Y')}"
+puts "Custom format: #{today.strftime("%B %d, %Y")}"
 
 ###########################################################################
 # Date arithmetic
@@ -143,7 +143,7 @@ puts "Second: #{parsed_dt.sec}"
 # Formatting
 puts "ISO 8601: #{now_dt.iso8601}"
 puts "RFC 3339: #{now_dt.rfc3339}"
-puts "Custom format: #{now_dt.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+puts "Custom format: #{now_dt.strftime("%Y-%m-%d %H:%M:%S %Z")}"
 
 ###########################################################################
 # Converting between Time, Date, and DateTime
@@ -218,8 +218,8 @@ puts "\n=== Date calculations ==="
 
 birthday = Date.new(1990, 5, 15)
 today = Date.today
-age = today.year - birthday.year - ((today.month > birthday.month || 
-                                    (today.month == birthday.month && today.day >= birthday.day)) ? 0 : 1)
+age = today.year - birthday.year - ((today.month > birthday.month ||
+                                     (today.month == birthday.month && today.day >= birthday.day)) ? 0 : 1)
 puts "Age: #{age} years"
 
 # Is it a leap year?
@@ -246,7 +246,7 @@ puts "Last Friday: #{last_friday}"
 ###########################################################################
 # Performance comparison
 puts "\n=== Performance comparison ==="
-require 'benchmark'
+require "benchmark"
 
 Benchmark.bm(10) do |x|
   x.report("Time:") { 1_000.times { Time.now } }

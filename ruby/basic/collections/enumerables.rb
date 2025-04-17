@@ -16,7 +16,7 @@ puts "\n--- Basic Iteration ---"
 
 # each - Fundamental iterator
 puts "\neach:"
-numbers.each { |n| print "#{n} " }  # 1 2 3 4 5 
+numbers.each { |n| print "#{n} " }  # 1 2 3 4 5
 puts "\n"
 
 # each_with_index - Provides index along with element

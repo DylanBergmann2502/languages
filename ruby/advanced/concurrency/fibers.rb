@@ -25,7 +25,7 @@ puts "Fiber yielded: #{result1}"
 puts "\nResuming fiber second time:"
 result2 = fiber.resume
 puts "Fiber yielded: #{result2}"
-# 
+#
 # Resuming fiber second time:
 # Fiber resumed
 # Fiber yielded: Second yield
@@ -33,13 +33,13 @@ puts "Fiber yielded: #{result2}"
 puts "\nResuming fiber third time:"
 result3 = fiber.resume
 puts "Fiber returned: #{result3}"
-# 
+#
 # Resuming fiber third time:
 # Fiber resumed again
 # Fiber returned: Final value
 
 puts "\nFiber status: #{fiber.alive? ? "alive" : "dead"}"
-# 
+#
 # Fiber status: dead
 
 # Attempting to resume a dead fiber raises an error
@@ -63,7 +63,7 @@ end
 puts "\nResuming fiber with argument:"
 result = fiber.resume("Hello, Fiber!")
 puts "Fiber yielded: #{result}"
-# 
+#
 # Resuming fiber with argument:
 # Fiber received: Hello, Fiber!
 # Fiber yielded: Send me another value
@@ -71,7 +71,7 @@ puts "Fiber yielded: #{result}"
 puts "\nResuming fiber with second argument:"
 final = fiber.resume("Resuming with this value")
 puts "Fiber returned: #{final}"
-# 
+#
 # Resuming fiber with second argument:
 # Fiber received second value: Resuming with this value
 # Fiber returned: Done
@@ -94,7 +94,7 @@ puts "\nGenerating Fibonacci sequence:"
 10.times do
   puts fib.resume
 end
-# 
+#
 # Generating Fibonacci sequence:
 # 0
 # 1
@@ -127,7 +127,7 @@ while (fruit = iterator.resume)
   puts "Got fruit: #{fruit}"
 end
 puts "Iterator exhausted"
-# 
+#
 # Iterating with fibers:
 # Got fruit: apple
 # Got fruit: banana
@@ -148,15 +148,15 @@ if Fiber.respond_to?(:reset)
   end
 
   3.times { puts "Count: #{counter_fiber.resume}" }
-  
+
   # Reset the fiber
   counter_fiber.reset if counter_fiber.respond_to?(:reset)
   puts "Fiber has been reset"
-  
+
   3.times { puts "Count after reset: #{counter_fiber.resume}" }
 else
   puts "\nFiber reset is not available in this Ruby version"
-  # 
+  #
   # Fiber reset is not available in this Ruby version
 end
 
@@ -172,7 +172,7 @@ fiber = Fiber.new do
   puts "  - Fiber resumed"
 end
 puts "  - Fiber is created but not running yet"
-# 
+#
 # Comparing Fibers and Threads:
 # 1. Creating a fiber (does not run automatically):
 #   - Fiber is created but not running yet
@@ -241,7 +241,7 @@ main_fiber = Fiber.new do
 end
 
 puts main_fiber.resume
-# 
+#
 # Starting async operations:
 # First result: First operation completed
 # Second result: Second operation completed

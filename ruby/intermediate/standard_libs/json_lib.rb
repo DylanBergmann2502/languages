@@ -1,6 +1,6 @@
 # JSON (JavaScript Object Notation) is a lightweight data interchange format
 # Ruby's standard library includes a JSON module for parsing and generating JSON data
-require 'json'
+require "json"
 
 #########################################################################
 # Parsing JSON (Converting JSON string to Ruby objects)
@@ -36,7 +36,7 @@ puts nested_data["person"]["hobbies"][0]  # coding
 
 # Converting hash to JSON string
 puts "\nConverting Ruby hash to JSON string:"
-ruby_hash = {name: "Ruby", version: 3.2, features: ["blocks", "procs", "lambdas"]}
+ruby_hash = { name: "Ruby", version: 3.2, features: ["blocks", "procs", "lambdas"] }
 json_output = ruby_hash.to_json
 puts json_output  # {"name":"Ruby","version":3.2,"features":["blocks","procs","lambdas"]}
 
@@ -79,19 +79,20 @@ p parsed_file_data  # {"name"=>"Ruby", "version"=>3.2, "features"=>["blocks", "p
 #########################################################################
 
 puts "\nJSON with custom objects:"
+
 class Person
   attr_accessor :name, :age
-  
+
   def initialize(name, age)
     @name = name
     @age = age
   end
-  
+
   # Method to convert object to hash for JSON serialization
   def to_json(*args)
-    {name: @name, age: @age}.to_json(*args)
+    { name: @name, age: @age }.to_json(*args)
   end
-  
+
   # Class method to create a Person from JSON
   def self.from_json(json_str)
     data = JSON.parse(json_str)

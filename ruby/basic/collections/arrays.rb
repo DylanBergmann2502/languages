@@ -155,7 +155,7 @@ puts "Frozen array: #{frozen_array}" # [1, 2, 3]
 begin
   frozen_array << 4  # This will raise an error
 rescue Exception => e
-  puts "Error when trying to modify frozen array: #{e.message}" 
+  puts "Error when trying to modify frozen array: #{e.message}"
 end
 
 # Multi-dimensional arrays

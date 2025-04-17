@@ -1,4 +1,4 @@
-require 'shellwords'
+require "shellwords"
 
 puts "== Basic Shellwords Usage =="
 
@@ -61,8 +61,10 @@ puts args.inspect
 
 # If you want String#shellwords as an instance method, you need to include it
 puts "\n== Extending String with Shellwords =="
+
 class String
   include Shellwords
+
   def shellwords
     shellsplit
   end

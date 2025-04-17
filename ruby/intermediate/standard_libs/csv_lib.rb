@@ -1,6 +1,6 @@
 # CSV (Comma-Separated Values) is a common format for data interchange
 # Ruby's standard library includes a CSV module for parsing and generating CSV data
-require 'csv'
+require "csv"
 
 ###########################################################################
 # Writing CSV data
@@ -22,7 +22,7 @@ data = [
   ["ID", "Product", "Price"],
   [1, "Laptop", 899.99],
   [2, "Phone", 499.99],
-  [3, "Tablet", 299.99]
+  [3, "Tablet", 299.99],
 ]
 CSV.open("products.csv", "w") do |csv|
   data.each do |row|
@@ -34,9 +34,9 @@ puts "File created: products.csv"
 # Writing an array of hashes to CSV
 puts "\nWriting array of hashes to CSV:"
 people = [
-  {name: "David", age: 31, city: "New York"},
-  {name: "Emma", age: 27, city: "London"},
-  {name: "Frank", age: 39, city: "Tokyo"}
+  { name: "David", age: 31, city: "New York" },
+  { name: "Emma", age: 27, city: "London" },
+  { name: "Frank", age: 39, city: "Tokyo" },
 ]
 
 CSV.open("people.csv", "w", headers: people.first.keys, write_headers: true) do |csv|
@@ -63,7 +63,7 @@ end
 # Reading CSV with headers
 puts "\nReading CSV with headers:"
 CSV.foreach("people.csv", headers: true) do |row|
-  puts "#{row['name']} is #{row['age']} years old and lives in #{row['city']}"
+  puts "#{row["name"]} is #{row["age"]} years old and lives in #{row["city"]}"
 end
 # David is 31 years old and lives in New York
 # Emma is 27 years old and lives in London
@@ -88,8 +88,8 @@ p content
 puts "\nReading as array of hashes:"
 products = CSV.read("products.csv", headers: true, header_converters: :symbol)
 p products.map(&:to_h)
-# [{:id=>"1", :product=>"Laptop", :price=>"899.99"}, 
-#  {:id=>"2", :product=>"Phone", :price=>"499.99"}, 
+# [{:id=>"1", :product=>"Laptop", :price=>"899.99"},
+#  {:id=>"2", :product=>"Phone", :price=>"499.99"},
 #  {:id=>"3", :product=>"Tablet", :price=>"299.99"}]
 
 ###########################################################################
@@ -107,7 +107,7 @@ p parsed_csv
 # Parsing with headers
 parsed_with_headers = CSV.parse(csv_string, headers: true)
 parsed_with_headers.each do |row|
-  puts "#{row['Quantity']} #{row['Item']}(s) at $#{row['Price']} each"
+  puts "#{row["Quantity"]} #{row["Item"]}(s) at $#{row["Price"]} each"
 end
 # 5 Book(s) at $9.99 each
 # 10 Pen(s) at $1.99 each
@@ -158,8 +158,8 @@ numbers_csv = "ID,Value\n1,10\n2,15.5\n3,20"
 
 # Converting string numbers to actual numbers
 CSV.parse(numbers_csv, headers: true, converters: :numeric).each do |row|
-  sum = row['ID'] + row['Value']
-  puts "ID #{row['ID']} + Value #{row['Value']} = #{sum} (#{sum.class})"
+  sum = row["ID"] + row["Value"]
+  puts "ID #{row["ID"]} + Value #{row["Value"]} = #{sum} (#{sum.class})"
 end
 # ID 1 + Value 10 = 11 (Integer)
 # ID 2 + Value 15.5 = 17.5 (Float)
@@ -169,9 +169,9 @@ end
 puts "\nCustom converters:"
 CSV::Converters[:boolean] = lambda do |field|
   case field.downcase
-  when 'true', 'yes', 'y', '1'
+  when "true", "yes", "y", "1"
     true
-  when 'false', 'no', 'n', '0'
+  when "false", "no", "n", "0"
     false
   else
     field
@@ -180,7 +180,7 @@ end
 
 bool_csv = "Name,Active\nAlice,true\nBob,false\nCharlie,yes\nDavid,no"
 CSV.parse(bool_csv, headers: true, converters: [:boolean]).each do |row|
-  puts "#{row['Name']} is #{row['Active'] ? 'active' : 'inactive'}"
+  puts "#{row["Name"]} is #{row["Active"] ? "active" : "inactive"}"
 end
 # Alice is active
 # Bob is inactive

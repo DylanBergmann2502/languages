@@ -1,6 +1,6 @@
 # Tempfile creates temporary files that are automatically deleted when closed
 # It's useful for working with temporary data that should not persist
-require 'tempfile'
+require "tempfile"
 
 ########################################################################
 # Creating a Tempfile
@@ -14,16 +14,16 @@ puts "File exists? #{File.exist?(basic_temp.path)}"
 
 # Tempfile with a basename
 # The actual filename will be basename + random string
-named_temp = Tempfile.new('my_prefix')
+named_temp = Tempfile.new("my_prefix")
 puts "Named temp path: #{named_temp.path}"  # Something like /tmp/my_prefix20230316-12345-abc123
 
 # Tempfile with basename and extension
 # Use an array: [basename, extension]
-html_temp = Tempfile.new(['webpage', '.html'])
+html_temp = Tempfile.new(["webpage", ".html"])
 puts "HTML temp path: #{html_temp.path}"  # Something like /tmp/webpage20230316-12345-abc123.html
 
 # Tempfile in specific directory
-custom_dir_temp = Tempfile.new('custom', Dir.pwd)
+custom_dir_temp = Tempfile.new("custom", Dir.pwd)
 puts "Custom dir temp: #{custom_dir_temp.path}"  # Uses current directory instead of system temp
 
 ########################################################################
@@ -37,7 +37,7 @@ content_temp.rewind  # Move position back to beginning
 puts content_temp.read  # "Hello, temporary world!"
 
 # Using blocks for automatic file handling
-Tempfile.open('block_example') do |file|
+Tempfile.open("block_example") do |file|
   file.puts "Line 1"
   file.puts "Line 2"
   file.puts "Line 3"
@@ -46,7 +46,7 @@ Tempfile.open('block_example') do |file|
 end  # File is automatically closed after block
 
 # Using the Tempfile with other IO methods
-csv_temp = Tempfile.new(['data', '.csv'])
+csv_temp = Tempfile.new(["data", ".csv"])
 csv_temp.puts "id,name,value"
 csv_temp.puts "1,apple,2.50"
 csv_temp.puts "2,banana,1.75"
@@ -90,7 +90,7 @@ puts "Temp files are automatically deleted when your Ruby process exits cleanly"
 puts "However, if your program crashes, temp files might remain on disk"
 
 # For critical cleanup, you can use at_exit
-cleanup_temp = Tempfile.new('cleanup_example')
+cleanup_temp = Tempfile.new("cleanup_example")
 puts "Created: #{cleanup_temp.path}"
 
 at_exit do
@@ -103,14 +103,14 @@ end
 
 # 1. Processing uploaded files
 def process_upload(uploaded_content)
-  temp = Tempfile.new(['upload', '.dat'])
+  temp = Tempfile.new(["upload", ".dat"])
   temp.binmode  # Important for binary data
   temp.write(uploaded_content)
   temp.rewind
-  
+
   # Process the data
   result = "Processed #{temp.size} bytes of data"
-  
+
   temp.close!
   return result
 end
@@ -118,7 +118,7 @@ end
 puts process_upload("Simulated file upload content")
 
 # 2. Creating a temp file and counting lines (cross-platform)
-text_temp = Tempfile.new(['input', '.txt'])
+text_temp = Tempfile.new(["input", ".txt"])
 text_temp.write("Ruby\nPython\nJavaScript\nGo\n")
 text_temp.close  # Close but don't delete yet
 
@@ -132,14 +132,14 @@ text_temp.unlink  # Now delete the file
 def download_and_process(url)
   # In a real app, you'd download content from the URL
   content = "Downloaded content from #{url}"
-  
-  temp = Tempfile.new('download')
+
+  temp = Tempfile.new("download")
   temp.write(content)
   temp.rewind
-  
+
   # Process downloaded content
   processed = temp.read.upcase
-  
+
   temp.close!
   return processed
 end
@@ -148,9 +148,9 @@ puts download_and_process("https://example.com/data.txt")
 
 ########################################################################
 # Working with binary data
-binary_temp = Tempfile.new('binary')
+binary_temp = Tempfile.new("binary")
 binary_temp.binmode  # Set to binary mode for non-text data
-binary_data = [0xFF, 0x00, 0xAA, 0x55].pack('C*')  # Some binary data
+binary_data = [0xFF, 0x00, 0xAA, 0x55].pack("C*")  # Some binary data
 binary_temp.write(binary_data)
 binary_temp.rewind
 
@@ -158,7 +158,7 @@ binary_temp.rewind
 binary_temp.binmode
 read_data = binary_temp.read
 puts "Binary data length: #{read_data.bytesize} bytes"
-puts "Binary data bytes: #{read_data.bytes.map { |b| "0x#{b.to_s(16).upcase}" }.join(', ')}"
+puts "Binary data bytes: #{read_data.bytes.map { |b| "0x#{b.to_s(16).upcase}" }.join(", ")}"
 
 binary_temp.close!
 
