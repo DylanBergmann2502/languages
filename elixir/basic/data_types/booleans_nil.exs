@@ -1,3 +1,4 @@
+# Basic boolean checks
 a = is_boolean(true) # true
 IO.puts("is_boolean(true): #{a}")
 
@@ -9,7 +10,7 @@ IO.puts(true and true) # true
 
 IO.puts(false or is_boolean(true)) # true
 
-# IO.puts(1 or true) # ** (BadBooleanError) expected a boolean on left-side of "and", got: 1
+# IO.puts(1 and true) # ** (BadBooleanError) expected a boolean on left-side of "and", got: 1
 
 ###################################################################
 # or and and are short-circuit operators.
@@ -39,3 +40,45 @@ IO.puts(!nil) # true
 def either_true?(a?, b?) do
   a? or b?
 end
+
+###################################################################
+# Demonstrating nil equality
+IO.puts(nil == nil) # true
+IO.puts(nil === nil) # true
+
+# nil is an atom but has special syntax
+IO.puts(nil == :nil) # true
+IO.puts(is_atom(nil)) # true
+
+###################################################################
+# Common patterns with nil handling
+name = nil
+# Using || for default values
+IO.puts(name || "Anonymous") # "Anonymous"
+
+# Using function with nil handling
+safe_div = fn
+  _, 0 -> nil
+  a, b -> a / b
+end
+
+IO.puts(safe_div.(10, 2)) # 5.0
+IO.puts(safe_div.(10, 0) || "Cannot divide by zero") # "Cannot divide by zero"
+
+###################################################################
+# Pattern matching with nil
+case nil do
+  nil -> IO.puts("It's nil!")
+  _ -> IO.puts("It's something else")
+end
+
+###################################################################
+# Using the maybe pattern (handling nil values)
+user = %{name: "John", address: nil}
+
+with {:ok, name} <- {:ok, user.name},
+     {:ok, address} <- if(user.address, do: {:ok, user.address}, else: :error) do
+  IO.puts("User #{name} lives at #{address}")
+else
+  :error -> IO.puts("User has no address")
+end # "User has no address"
