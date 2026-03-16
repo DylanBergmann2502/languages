@@ -4,3 +4,6 @@ venv/
 vendor/
 node_modules/
 .claude/
+
+# Rust
+target/
