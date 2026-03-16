@@ -3,3 +3,4 @@ venv/
 .venv/
 vendor/
 node_modules/
+.claude/
