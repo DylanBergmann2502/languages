@@ -38,7 +38,7 @@ fn main() {
 
     println!("\nEscape sequences:");
     print!("newline: a{}b", newline); // a
-                                      // b
+    // b
     print!("tab: a{}b\n", tab); // a    b
     print!("carriage_return: a{}b\n", carriage_return); // a\rb
     print!("backslash: {}\n", backslash); // \

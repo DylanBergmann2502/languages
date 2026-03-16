@@ -74,7 +74,7 @@ fn option_methods_examples() {
 
     // unwrap() - use with caution! Panics on None
     println!("some_value.unwrap(): {}", some_value.unwrap()); // 42
-                                                              // println!("no_value.unwrap(): {}", no_value.unwrap());      // This would panic!
+    // println!("no_value.unwrap(): {}", no_value.unwrap());      // This would panic!
 
     // unwrap_or() - provides a default value
     println!("some_value.unwrap_or(0): {}", some_value.unwrap_or(0)); // 42
@@ -91,7 +91,7 @@ fn option_methods_examples() {
         "some_value.expect('Should have value'): {}",
         some_value.expect("Should have value")
     ); // 42
-       // no_value.expect("Should have value");  // Would panic with custom message
+    // no_value.expect("Should have value");  // Would panic with custom message
 }
 
 // Function demonstrating Option transformations

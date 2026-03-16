@@ -81,7 +81,7 @@ fn result_methods_examples() {
 
     // unwrap() - use with caution! Panics on Err
     println!("success.unwrap(): {}", success.unwrap()); // 42
-                                                        // println!("failure.unwrap(): {}", failure.unwrap());  // This would panic!
+    // println!("failure.unwrap(): {}", failure.unwrap());  // This would panic!
 
     // unwrap_or() - provides a default value on error
     println!("success.unwrap_or(0): {}", success.unwrap_or(0)); // 42
@@ -98,7 +98,7 @@ fn result_methods_examples() {
         "success.expect('Should have value'): {}",
         success.expect("Should have value")
     ); // 42
-       // failure.expect("Should have value");  // Would panic with custom message
+    // failure.expect("Should have value");  // Would panic with custom message
 
     // unwrap_err() - gets the error value (panics on Ok)
     println!("failure.unwrap_err(): {}", failure.unwrap_err()); // "error"

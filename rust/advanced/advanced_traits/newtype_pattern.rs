@@ -183,5 +183,5 @@ fn main() {
     let pid = ProductId(42);
     println!("{}", get_user_name(&uid)); // user_42
     println!("{}", get_product_name(&pid)); // product_42
-                                            // get_user_name(&pid);  // compile error: expected UserId, found ProductId
+    // get_user_name(&pid);  // compile error: expected UserId, found ProductId
 }

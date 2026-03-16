@@ -106,7 +106,7 @@ fn main() {
 
     // Default implementation
     println!("{}", article.preview()); // Rust is Amazing, by ...
-                                       // Overridden default
+    // Overridden default
     println!("{}", tweet.preview()); // @bob tweeted: Loving Rust so far!
 
     // Default greet

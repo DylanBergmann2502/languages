@@ -37,7 +37,7 @@ fn main() {
     let distance: Kilometers = 5;
     let also_distance: Meters = 5;
     println!("{}", distance + also_distance); // 10
-                                              // Note: aliases don't prevent mixing — they're the same type
+    // Note: aliases don't prevent mixing — they're the same type
 
     // Thunk — avoids repeating Box<dyn Fn() -> String> everywhere
     let greet = make_greeting("Alice");

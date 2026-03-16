@@ -151,7 +151,7 @@ fn main() {
     println!("{}", c.speak()); // Luna says meow!
 
     // Re-exported items from prelude
-    use prelude::{circle_area, Cat as PCat, Dog as PDog};
+    use prelude::{Cat as PCat, Dog as PDog, circle_area};
     let pd = PDog::new("Max");
     let pc = PCat::new("Milo");
     println!("{}", pd.speak()); // Max says woof!

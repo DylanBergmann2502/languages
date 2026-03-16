@@ -204,7 +204,7 @@ fn main() {
     println!("Before conversion: {:?}", rect4); // Rectangle { width: 8, height: 12 }
     let converted_square = rect4.into_square();
     println!("After conversion to square: {:?}", converted_square); // Rectangle { width: 12, height: 12 }
-                                                                    // rect4 can no longer be used here because it was moved
+    // rect4 can no longer be used here because it was moved
 
     println!("\n=== BankAccount Methods Examples ===");
 

@@ -145,7 +145,7 @@ fn main() {
 
     println!("{}", user.name); // Alice  (pub field)
     println!("{}", user.email); // alice@example.com  (pub(crate) — same crate)
-                                // println!("{}", user.password);              // error: private field
+    // println!("{}", user.password);              // error: private field
 
     println!("{}", user.verify_password("secret123")); // true
     println!("{}", user.verify_password("wrong")); // false
@@ -161,7 +161,7 @@ fn main() {
     // Config: fields are private, only accessible via methods
     let cfg = data::Config::new("localhost", 8080);
     println!("{}", cfg.address()); // localhost:8080
-                                   // println!("{}", cfg.host);                   // error: private field
+    // println!("{}", cfg.host);                   // error: private field
 
     // --- Summary ---
     // pub          → everywhere

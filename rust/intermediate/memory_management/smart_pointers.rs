@@ -102,7 +102,7 @@ fn main() {
         let a = MyBox::new(String::from("alpha"));
         let b = MyBox::new(String::from("beta"));
         println!("{} {}", *a, *b); // alpha beta
-                                   // Drop order is reverse of creation: beta first, then alpha
+        // Drop order is reverse of creation: beta first, then alpha
     }
     // Dropping MyBox with value: beta
     // Dropping MyBox with value: alpha

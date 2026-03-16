@@ -141,20 +141,12 @@ fn main() {
 
 // Lifetime annotations are needed when multiple references could have different lifetimes
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
-    if x.len() > y.len() {
-        x
-    } else {
-        y
-    }
+    if x.len() > y.len() { x } else { y }
 }
 
 // Mixed lifetimes - static and regular
 fn longest_mixed<'a>(x: &'static str, y: &'a str) -> &'a str {
-    if x.len() > y.len() {
-        x
-    } else {
-        y
-    }
+    if x.len() > y.len() { x } else { y }
 }
 
 // Lifetime elision - compiler infers lifetime
@@ -171,11 +163,7 @@ fn first_word(s: &str) -> usize {
 // Multiple lifetime parameters with constraint
 fn longest_with_announcement<'a, 'b>(x: &'a str, y: &'a str, ann: &'b str) -> &'a str {
     println!("{}", ann);
-    if x.len() > y.len() {
-        x
-    } else {
-        y
-    }
+    if x.len() > y.len() { x } else { y }
 }
 
 // Correct way to return a reference

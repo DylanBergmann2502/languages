@@ -53,7 +53,7 @@ fn main() {
     let name = String::from("Alice");
     let greet = move || format!("Hello, {}!", name); // name moved into closure
     println!("{}", greet()); // Hello, Alice!
-                             // println!("{}", name); // error: name moved
+    // println!("{}", name); // error: name moved
 
     // The three closure traits:
     // Fn     — borrows immutably, can be called multiple times

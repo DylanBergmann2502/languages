@@ -39,7 +39,7 @@ fn main() {
     let v2 = vec![10, 20, 30];
     let doubled: Vec<i32> = v2.into_iter().map(|x| x * 2).collect();
     println!("{:?}", doubled); // [20, 40, 60]
-                               // v2 is moved, can't use it anymore
+    // v2 is moved, can't use it anymore
 
     // iter_mut() — yields &mut T
     let mut v3 = vec![1, 2, 3];

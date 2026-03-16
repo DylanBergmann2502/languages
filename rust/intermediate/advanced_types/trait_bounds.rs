@@ -110,7 +110,7 @@ fn main() {
 
     // Where clause with multiple bounds
     notify_where(&article); // Debug: Article(Rust is Fast)
-                            // Summary: Article: Rust is Fast
+    // Summary: Article: Rust is Fast
 
     // Multiple type params
     compare_and_display(&42, &"hello"); // t = 42, u = hello

@@ -134,7 +134,7 @@ fn main() {
     println!("{}", item.name); // widget
     println!("{}", item.quantity); // 3
     println!("{:.2}", item.total_value()); // 29.97
-                                           // println!("{}", item.price); // error: field `price` is private
+    // println!("{}", item.price); // error: field `price` is private
 
     let status = inventory::check_status(&item);
     println!("{:?}", status); // uses the u32 inside LowStock                       // LowStock(3)

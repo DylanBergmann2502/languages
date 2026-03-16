@@ -1,5 +1,5 @@
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicUsize, Ordering};
 use std::thread;
 
 // Atomic types: thread-safe primitives without Mutex overhead
