@@ -8,7 +8,10 @@ func main() {
 	// using this syntax: interfaceVariable.(concreteType).
 	var input interface{} = 12
 
-	str := input.(string) // panic at runtime since input is not a string!
+	// unsafe form — panics at runtime if the type doesn't match
+	// str := input.(string)
+
+	// safe form — returns zero value + false instead of panicking
 	str, ok := input.(string)
 
 	if !ok {
