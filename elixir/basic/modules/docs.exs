@@ -40,15 +40,15 @@ defmodule MyApp.Hello do
 
   # Another common metadata is :deprecated,
   # which emits a warning in the documentation, explaining that its usage is discouraged:
-  @doc deprecated: "Use Foo.bar/2 instead"
-
-  # Note that the :deprecated key does not warn
-  # when a developer invokes the functions.
-  # If you want the code to also emit a warning,
-  # you can use the @deprecated attribute:
-  @deprecated "Use Foo.bar/2 instead"
+  @doc deprecated: "Use world/1 instead"
+  @deprecated "Use world/1 instead"
+  def hello(name) do
+    IO.puts("hello #{name}")
+  end
 
   # Always document a module.
   # If you do not intend to document a module, do not leave it blank.
   # Consider annotating the module false
 end
+
+MyApp.Hello.world(:alice)

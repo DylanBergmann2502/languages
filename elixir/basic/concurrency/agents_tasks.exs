@@ -40,8 +40,12 @@ task1 = Task.async(fn ->
   end)
 end)
 
+Task.await(task1)
+
 task2 = Task.async(fn ->
   Agent.get(cache, fn state ->
     Map.get(state, :key1)
   end)
 end)
+
+IO.inspect Task.await(task2)  # "value1" (or nil if task1 hasn't run yet)

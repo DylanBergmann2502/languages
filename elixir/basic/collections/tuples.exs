@@ -78,7 +78,7 @@ IO.puts("\nTuple.duplicate/2:")
 IO.puts("#{inspect(repeated_tuple)}")
 
 # Append to a tuple
-appended_tuple = Tuple.append(tuple, :appended)
+appended_tuple = Tuple.insert_at(tuple, tuple_size(tuple), :appended)
 IO.puts("\nTuple.append/2:")
 IO.puts("Original: #{inspect(tuple)}")
 IO.puts("After append: #{inspect(appended_tuple)}")

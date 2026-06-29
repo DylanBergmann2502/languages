@@ -30,6 +30,9 @@ list[:month] # => "April"
 
 ################################
 # Keyword lists as options
+# The if macro uses keyword lists for its do:/else: options.
+# All three forms below are equivalent:
+age = 18
 if age >= 16, do: "beer", else: "no beer"
 # or
 if age >= 16, [do: "beer", else: "no beer"]

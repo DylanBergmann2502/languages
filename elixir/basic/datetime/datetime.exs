@@ -3,31 +3,46 @@ now = DateTime.utc_now()  # Returns datetime in UTC
 IO.inspect now
 
 # Get current time in specific timezone
-IO.inspect DateTime.now("America/Los_Angeles")
+# Requires a timezone database (e.g. tzdata). Without one, returns {:error, :utc_only_time_zone_database}.
+case DateTime.now("America/Los_Angeles") do
+  {:ok, dt} -> IO.inspect(dt)
+  {:error, reason} -> IO.puts("Timezone DB not available: #{reason}")
+end
 
 # Create specific DateTime (in UTC)
 IO.inspect DateTime.new(Date.utc_today(), ~T[14:30:15.0])
 
-# Create with specific timezone
-datetime = DateTime.new(
+# Create with specific timezone (requires timezone DB)
+datetime_result = DateTime.new(
   Date.utc_today(),
   ~T[14:30:15.0],
   "America/New_York"
 )
 
-# Timezone conversions
-IO.inspect DateTime.shift_zone(datetime, "America/Los_Angeles")
+datetime = case datetime_result do
+  {:ok, dt} -> dt
+  {:error, _} ->
+    # Fall back to UTC for demonstration purposes
+    elem(DateTime.new(Date.utc_today(), ~T[14:30:15.0], "Etc/UTC"), 1)
+end
+
+# Timezone conversions (requires timezone DB)
+case DateTime.shift_zone(datetime, "America/Los_Angeles") do
+  {:ok, shifted} -> IO.inspect(shifted)
+  {:error, reason} -> IO.puts("Timezone shift unavailable: #{reason}")
+end
 
 # Basic arithmetic
 later = DateTime.add(datetime, 3600, :second)    # Add 1 hour
 earlier = DateTime.add(datetime, -3600, :second) # Subtract 1 hour
 
 # Compare DateTimes
-DateTime.compare(later, earlier)  # Returns :gt, :eq, or :lt
-DateTime.diff(later, earlier)     # Returns difference in seconds
+IO.inspect DateTime.compare(later, earlier)  # Returns :gt, :eq, or :lt
+IO.inspect DateTime.diff(later, earlier)     # Returns difference in seconds
 
 # Parse from strings
-{:ok, parsed} = DateTime.from_iso8601("2024-01-03T14:30:15Z")
+# from_iso8601 returns {:ok, datetime, utc_offset_seconds}
+{:ok, parsed, _offset} = DateTime.from_iso8601("2024-01-03T14:30:15Z")
 IO.inspect parsed
 
 # Format to strings
@@ -68,4 +83,4 @@ IO.inspect time
 IO.inspect naive
 
 # Check if two datetimes are equal
-IO.inspect DateTime.equals?(datetime, naive)
+IO.inspect DateTime.compare(datetime, datetime) == :eq  # true

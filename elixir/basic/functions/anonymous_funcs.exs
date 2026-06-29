@@ -71,4 +71,4 @@ return_list = &[&1, &2]
 IO.puts(return_list.(1, 2))    # [1, 2]
 
 return_tuple  = &{&1, &2}
-IO.puts(return_tuple .(1, 2))  # {1, 2}
+IO.inspect(return_tuple.(1, 2))  # {1, 2}

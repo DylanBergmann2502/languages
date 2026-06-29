@@ -6,11 +6,11 @@ IO.puts date.month
 IO.puts date.year
 
 # Get today's date
-today = Date.utc_today()  # Returns something like ~D[2024-01-03]
+_today = Date.utc_today()  # Returns something like ~D[2024-01-03]
 
 # Creating specific dates
 {:ok, date} = Date.new(2024, 1, 3)
-{:ok, leap_date} = Date.new(2024, 2, 29)  # 2024 is a leap year
+{:ok, _leap_date} = Date.new(2024, 2, 29)  # 2024 is a leap year
 
 # Basic arithmetic with dates
 tomorrow = Date.add(date, 1)

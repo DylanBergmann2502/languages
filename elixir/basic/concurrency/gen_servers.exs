@@ -134,7 +134,6 @@ CounterAgent.run()
 
 defmodule JobProcessor do
   use GenServer
-  require Logger
 
   # Client API
   # ---------

@@ -4,4 +4,11 @@ x = 1 # 1
 # right side are equal to 1. When the sides
 # do not match, a MatchError is raised.
 1 = x # 1
-2 = x # ** (MatchError) no match of right hand side value: 1
+
+# 2 = x would raise ** (MatchError) no match of right hand side value: 1
+# We wrap it in try/rescue to demonstrate the error without crashing the script:
+try do
+  2 = x
+rescue
+  e in MatchError -> IO.puts("Caught MatchError: #{inspect(e.term)}")
+end

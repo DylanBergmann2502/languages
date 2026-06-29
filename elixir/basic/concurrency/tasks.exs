@@ -15,7 +15,7 @@ end)
 
 # Task.start_link - like start but links to current process
 # If task crashes, calling process also crashes
-{:ok, pid} = Task.start_link(fn ->
+{:ok, _pid} = Task.start_link(fn ->
   Process.sleep(1000)
   IO.puts("Task.start_link completed")
 end)

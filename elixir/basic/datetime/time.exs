@@ -11,11 +11,12 @@ IO.inspect Time.utc_now()
 # Avoid creating the Time structs directly and instead
 # rely on the functions provided by this module.
 {:ok, time} = Time.new(14, 30, 15)  # Basic: hours, minutes, seconds
-{:ok, time_micro} = Time.new(14, 30, 15, 123456)  # With microseconds
+{:ok, _time_micro} = Time.new(14, 30, 15, 123456)  # With microseconds
 
 # Adding/subtracting time
-{:ok, later} = Time.add(time, 3600)  # Add 3600 seconds
-{:ok, earlier} = Time.add(time, -1800)  # Subtract 1800 seconds
+# Time.add/3 takes (time, amount, unit) and returns a Time struct directly (no {:ok, ...} tuple)
+later = Time.add(time, 3600, :second)   # Add 3600 seconds
+earlier = Time.add(time, -1800, :second) # Subtract 1800 seconds
 
 # Comparing times
 IO.inspect Time.compare(later, earlier)  # Returns :gt, :eq, or :lt

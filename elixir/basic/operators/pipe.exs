@@ -49,11 +49,10 @@ String.upcase("hello") |> String.split("")
 ### Pitfalls
 ## Operator precedence
 
-String.graphemes "Hello" |> Enum.reverse
-
-# Translates to
-
-String.graphemes("Hello" |> Enum.reverse())
+# String.graphemes "Hello" |> Enum.reverse
+# ^ Translates to String.graphemes("Hello" |> Enum.reverse())
+# which tries to reverse a String, not a list — operator precedence trap.
+# This is a common mistake — always use parentheses with pipe chains.
 
 # Adding explicit parentheses resolves the ambiguity:
 
@@ -74,5 +73,5 @@ double = fn x -> (x + 1) * 2 end
 # but this will
 [1, 2, 3, 4, 5] |> Enum.map(&double.(&1))
 
-# or you can you then
-[1, 2, 3, 4, 5] |> then(Enum.map(fn x -> (x + 1) * 2 end))
+# or you can use then/2 with an explicit function
+[1, 2, 3, 4, 5] |> then(fn list -> Enum.map(list, fn x -> (x + 1) * 2 end) end)

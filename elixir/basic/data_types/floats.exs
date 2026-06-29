@@ -50,6 +50,9 @@ IO.puts Float.round(5.5)  # => 6.0 (rounds to nearest even)
 IO.puts Float.round(4.5)  # => 4.0 (rounds to nearest even)
 
 # Float infinity and NaN
-IO.puts(1.0 / 0.0)  # => :infinity
-IO.puts(-1.0 / 0.0)  # => -:infinity
-IO.puts(0.0 / 0.0)  # => :nan (not a number)
+# Elixir raises ArithmeticError on division by zero and float overflow.
+# Unlike some languages, there is no IEEE 754 infinity or NaN accessible from Elixir code.
+# Division by zero always raises, regardless of operand type:
+#   1.0 / 0.0  # => ** (ArithmeticError)
+#   1 / 0      # => ** (ArithmeticError)
+# Use pattern matching or guards to handle these cases defensively instead.

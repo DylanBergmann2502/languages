@@ -28,9 +28,15 @@ defmodule Animal do
 
   def run do
     animal = %Animal{type: "dog"}
-    # This will raise a Protocol.UndefinedError because we didn't derive or implement
-    # Greeting for Animal
-    IO.inspect Greeting.say_hello(animal)
+    # This raises Protocol.UndefinedError because we didn't derive or implement
+    # Greeting for Animal. Wrapped in try so the script doesn't crash.
+    try do
+      IO.inspect Greeting.say_hello(animal)
+    rescue
+      e in Protocol.UndefinedError ->
+        IO.puts("Got value:\n    #{inspect(animal)}")
+        IO.puts("Error: #{inspect(e)}")
+    end
   end
 end
 

@@ -7,6 +7,8 @@ binary_value = 0b10101 # => 21 (binary)
 IO.puts("Decimal: #{a}, Hex: #{hex_value}, Octal: #{octal_value}, Binary: #{binary_value}")
 
 # Integer predicates - checking properties
+# is_even/1 and is_odd/1 are macros; require Integer before using them in guards
+require Integer
 IO.puts Integer.is_even(10) # true
 IO.puts Integer.is_odd(5)   # true
 
@@ -20,9 +22,9 @@ IO.puts Integer.undigits([1, 2, 3])     # => 123
 IO.puts Integer.undigits([7, 11], 16)   # => 123 (from hex)
 
 # Math operations
-IO.puts Integer.floor_div(5, 2) # 2 (integer division with floor)
-IO.puts Integer.div(5, 2)       # 2 (integer division)
-IO.puts Integer.mod(5, 2)       # 1 (remainder)
+IO.puts Integer.floor_div(5, 2) # 2 (integer division, floor toward -infinity)
+IO.puts div(5, 2)               # 2 (Kernel integer division, truncates toward zero)
+IO.puts rem(5, 2)               # 1 (Kernel remainder, sign matches dividend)
 IO.puts Integer.pow(2, 10)      # 1024 (exponentiation)
 IO.puts Integer.gcd(12, 8)      # 4 (greatest common divisor)
 
@@ -34,7 +36,7 @@ IO.puts Integer.to_string(-789)   # "-789" (negative sign preserved)
 IO.puts Integer.to_string(0123)   # "123" (leading zeros ignored)
 
 # Parse strings as integers
-IO.puts Integer.parse("123")      # {123, ""} (returns tuple with parsed integer and remainder)
+IO.inspect Integer.parse("123")      # {123, ""} (returns tuple with parsed integer and remainder)
 {value, _} = Integer.parse("123") # pattern match to get just the integer
 IO.puts value                     # 123
 

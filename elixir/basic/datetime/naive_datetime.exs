@@ -9,12 +9,12 @@ IO.puts naive.minute
 IO.puts naive.second
 
 # Get current datetime (without timezone)
-naive_now = NaiveDateTime.utc_now()  # Returns something like ~N[2024-01-03 14:30:15]
+_naive_now = NaiveDateTime.utc_now()  # Returns something like ~N[2024-01-03 14:30:15]
 
 # Create specific NaiveDateTime
 {:ok, naive} = NaiveDateTime.new(2024, 1, 3, 14, 30, 15)
 # With microseconds
-{:ok, naive_micro} = NaiveDateTime.new(2024, 1, 3, 14, 30, 15, 123456)
+{:ok, _naive_micro} = NaiveDateTime.new(2024, 1, 3, 14, 30, 15, 123456)
 
 # Basic arithmetic
 later = NaiveDateTime.add(naive, 3600, :second)  # Add 1 hour

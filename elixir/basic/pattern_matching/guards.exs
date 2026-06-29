@@ -2,9 +2,15 @@
 # Guard expressions are special functions which:
 #   Must be pure and not mutate any global states.
 #   Must return strict true or false values.
-def empty?(list) when is_list(list) and length(list) == 0 do
-  true
+defmodule ListUtils do
+  def empty?(list) when is_list(list) and length(list) == 0 do
+    true
+  end
+  def empty?(_), do: false
 end
+
+IO.puts ListUtils.empty?([])   # true
+IO.puts ListUtils.empty?([1])  # false
 
 # List of allowed functions and operators
 #   Type checks: is_integer/1, is_list/1, is_nil/1 etc.
@@ -25,18 +31,21 @@ end
 
 #########################################################################
 # Non-passing guards
-def not_nil_head?([head | _]) when head, do: true
-def not_nil_head?(_), do: false
+defmodule HeadCheck do
+  def not_nil_head?([head | _]) when head, do: true
+  def not_nil_head?(_), do: false
 
-not_nil_head?(["some_value", "another_value"])
+  # Even though the head of the list is not nil, the first clause
+  # for not_nil_head?/1 fails because the expression does not evaluate to true
+
+  def not_nil_head_fixed?([head | _]) when head != nil, do: true
+  def not_nil_head_fixed?(_), do: false
+end
+
+IO.puts HeadCheck.not_nil_head?(["some_value", "another_value"])
 #=> false
 
-# Even though the head of the list is not nil, the first clause
-# for not_nil_head?/1 fails because the expression does not evaluate to true
-def not_nil_head?([head | _]) when head != nil, do: true
-def not_nil_head?(_), do: false
-
-not_nil_head?(["some_value", "another_value"])
+IO.puts HeadCheck.not_nil_head_fixed?(["some_value", "another_value"])
 #=> true
 
 #########################################################################
@@ -60,21 +69,11 @@ end
 
 #########################################################################
 # Multiple guards in the same clause
-def is_number_or_nil(term) when is_integer(term) or is_float(term) or is_nil(term),
-  do: :maybe_number
-def is_number_or_nil(_other),
-  do: :something_else
-
-# above and below are equal
-def is_number_or_nil(term)
-    when is_integer(term)
-    when is_float(term)
-    when is_nil(term) do
-  :maybe_number
-end
-
-def is_number_or_nil(_other) do
-  :something_else
+defmodule TypeCheck do
+  def is_number_or_nil(term) when is_integer(term) or is_float(term) or is_nil(term),
+    do: :maybe_number
+  def is_number_or_nil(_other),
+    do: :something_else
 end
 
 # But
@@ -84,15 +83,11 @@ defmodule Check do
   def empty?(_val), do: false
 end
 
-Check.empty?(%{})
-#=> true
+IO.inspect Check.empty?(%{}) #=> true
+IO.inspect Check.empty?({})  #=> false (surprising! map_size raised, short-circuit killed second check)
 
-Check.empty?({})
-#=> false # true was expected!
-
-# These are different
-defmodule Check do
-  # If given a tuple, map_size/1 will raise, and the second guard will be evaluated
+# These are different: using separate when clauses (each guard is tried independently)
+defmodule Check2 do
   def empty?(val)
       when map_size(val) == 0
       when tuple_size(val) == 0,
@@ -101,8 +96,5 @@ defmodule Check do
   def empty?(_val), do: false
 end
 
-Check.empty?(%{})
-#=> true
-
-Check.empty?({})
-#=> true
+IO.inspect Check2.empty?(%{}) #=> true
+IO.inspect Check2.empty?({})  #=> true

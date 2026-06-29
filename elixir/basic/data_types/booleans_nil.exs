@@ -37,9 +37,14 @@ IO.puts(!nil) # true
 # it is idiomatic to end the function name with a ?.
 # The same convention can be used for variables that
 # store boolean values.
-def either_true?(a?, b?) do
-  a? or b?
+defmodule BoolUtils do
+  def either_true?(a?, b?) do
+    a? or b?
+  end
 end
+
+IO.puts BoolUtils.either_true?(false, true)  # true
+IO.puts BoolUtils.either_true?(false, false) # false
 
 ###################################################################
 # Demonstrating nil equality

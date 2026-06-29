@@ -32,7 +32,9 @@ IO.puts Concat.join("Hello", "world")      #=> Hello world
 IO.puts Concat.join("Hello", "world", "_") #=> Hello_world
 IO.puts Concat.join("Hello")               #=> Hello
 
-def DoSomething do
+# When a function has multiple clauses with per-clause defaults,
+# use a function head to declare the defaults once:
+defmodule DoSomething do
   # In order to specify a default value for these functions,
   # we don't put the default value in both function clauses,
   # but rather we create a new function clause that just
@@ -48,3 +50,7 @@ def DoSomething do
     {param1 * 100, param2}
   end
 end
+
+IO.inspect DoSomething.do_something(5)      # {50, 3}
+IO.inspect DoSomething.do_something(2.0)    # {200.0, 3}
+IO.inspect DoSomething.do_something(5, 10)  # {50, 10}
