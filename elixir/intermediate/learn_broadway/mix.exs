@@ -21,7 +21,7 @@ defmodule LearnBroadway.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:broadway, "~> 1.2"},
+      {:broadway, "~> 1.3"},
     ]
   end
 end

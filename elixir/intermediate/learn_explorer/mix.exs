@@ -21,7 +21,7 @@ defmodule LearnExplorer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:explorer, "~> 0.10.1"}
+      {:explorer, "~> 0.11"}
     ]
   end
 end

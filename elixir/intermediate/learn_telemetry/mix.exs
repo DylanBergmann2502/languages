@@ -21,7 +21,7 @@ defmodule LearnTelemetry.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:telemetry, "~> 1.3"},
+      {:telemetry, "~> 1.4"},
     ]
   end
 end
