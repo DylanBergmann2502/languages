@@ -52,7 +52,7 @@ func main() {
 
 	byt := []byte(`{"num":6.13,"strs":["a","b"]}`)
 
-	var dat map[string]interface{}
+	var dat map[string]any // any = interface{}, canonical alias since Go 1.18
 
 	if err := json.Unmarshal(byt, &dat); err != nil {
 		panic(err)
@@ -62,7 +62,7 @@ func main() {
 	num := dat["num"].(float64)
 	fmt.Println(num) // 6.13
 
-	strs := dat["strs"].([]interface{})
+	strs := dat["strs"].([]any)
 	str1 := strs[0].(string)
 	fmt.Println(str1) // a
 

@@ -37,4 +37,16 @@ func main() {
 	for range xi {
 		count++
 	}
+
+	// range over integer (Go 1.22) — cleaner than a C-style for loop
+	for i := range 5 {
+		fmt.Print(i, " ") // 0 1 2 3 4
+	}
+	fmt.Println()
+
+	// useful for repeating something N times without a loop variable
+	for range 3 {
+		fmt.Print("go ")
+	}
+	fmt.Println()
 }

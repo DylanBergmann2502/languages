@@ -36,12 +36,14 @@ func main() {
 	counter2 := makeCounter()
 	fmt.Println(counter2()) // 1 (independent from counter)
 
-	// Closure capturing a loop variable — common gotcha
+	// Closure capturing a loop variable
+	// Pre-Go 1.22: all closures shared the same loop variable, so you needed
+	// `i := i` to shadow it per iteration. Go 1.22+ gives each iteration its
+	// own variable automatically — the workaround is no longer needed.
 	funcs := make([]func(), 3)
-	for i := 0; i < 3; i++ {
-		i := i // create a new variable scoped to this iteration
+	for i := range 3 { // range over integer (Go 1.22)
 		funcs[i] = func() {
-			fmt.Println(i)
+			fmt.Println(i) // each closure captures its own i in Go 1.22+
 		}
 	}
 	funcs[0]() // 0

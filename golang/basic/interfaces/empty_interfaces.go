@@ -5,14 +5,13 @@ import (
 )
 
 // An interface that has zero methods is called an empty interface.
-// It is represented as interface{}.
-// Since the empty interface has zero methods,
-// all types implement the empty interface.
-func describe(i interface{}) {
+// Since Go 1.18 it has a canonical alias: `any` (equivalent to interface{}).
+// All types implement the empty interface.
+func describe(i any) {
 	fmt.Printf("Type = %T, value = %v\n", i, i)
 }
 
-func findType(i interface{}) {
+func findType(i any) {
 	// i.(T) is the syntax which is used to
 	// get the underlying value of interface i whose concrete type is T.
 	switch i.(type) {

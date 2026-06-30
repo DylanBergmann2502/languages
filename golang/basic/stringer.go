@@ -41,6 +41,6 @@ func (d Distance) String() string {
 	return fmt.Sprintf("%v %v", d.number, d.unit)
 }
 
-func p(val interface{}) {
+func p(val any) { // any = interface{} alias, canonical since Go 1.18
 	fmt.Println(val)
 }

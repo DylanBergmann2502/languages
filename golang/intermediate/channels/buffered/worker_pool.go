@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2" // v2 is the standard since Go 1.22 — no manual seeding needed
 	"sync"
 	"time"
 )
@@ -52,7 +52,7 @@ func createWorkerPool(noOfWorkers int) {
 
 func allocate(noOfJobs int) {
 	for i := 0; i < noOfJobs; i++ {
-		randomNo := rand.Intn(999)
+		randomNo := rand.IntN(999) // renamed from Intn in math/rand/v2
 		job := Job{i, randomNo}
 		jobs <- job
 	}
