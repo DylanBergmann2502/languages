@@ -1,23 +1,11 @@
 defmodule LearnReq do
   @moduledoc """
-  Req v0.5 — modern, batteries-included HTTP client for Elixir.
+  Req v0.5 — modern HTTP client for Elixir.
 
-  Req is the current standard for HTTP in Elixir, replacing HTTPoison.
-  It's built on Finch (which uses Mint and NimblePool), and composes
-  request/response logic as a pipeline of steps — each step can inspect
-  or modify the request and response.
+  Built on Finch/Mint/NimblePool. Composes request/response as a pipeline
+  of steps. Replaces HTTPoison as the ecosystem standard.
 
-  Key features:
-    - Automatic JSON encode/decode
-    - Automatic decompression (gzip, brotli, zstd)
-    - Retries with configurable backoff
-    - Authentication helpers (basic, bearer, digest, netrc, AWS SigV4)
-    - Streaming (into a file, IO, callback, or mailbox)
-    - Plug-based testing (no real HTTP needed in tests)
-    - Composable via base Req structs and custom steps
-
-  Setup in mix.exs:
-    {:req, "~> 0.5"}
+  dep: {:req, "~> 0.5"}
   """
 
   def run do
@@ -26,411 +14,233 @@ defmodule LearnReq do
     basic_requests()
     response_struct()
     base_url_pattern()
-    authentication()
-    request_body()
+    request_bodies()
     streaming()
     retry_and_errors()
-    custom_steps()
     testing_with_plug()
+    custom_steps()
   end
 
   # -----------------------------------------------------------------------
-  # 1. Basic requests
+  # 1. Basic requests — all methods, JSON auto-decode, query params
   # -----------------------------------------------------------------------
   defp basic_requests do
     IO.puts("--- Basic Requests ---")
 
-    IO.puts("""
-    # GET — simplest usage
-    resp = Req.get!("https://httpbin.org/get")
-    resp.status    #=> 200
-    resp.body      #=> %{"url" => "https://httpbin.org/get", ...}
-
-    # Automatic JSON decode (Content-Type: application/json → decoded map)
+    # GET — JSON is automatically decoded because Content-Type is application/json
     resp = Req.get!("https://httpbin.org/json")
-    resp.body["slideshow"]["title"]
-    #=> "Sample Slide Show"
+    IO.puts("GET status: #{resp.status}")
+    IO.puts("GET body (decoded map): #{inspect(resp.body["slideshow"]["title"])}")
 
-    # !-variants raise on network error or (optionally) HTTP errors
-    # Non-! variants return {:ok, response} | {:error, exception}
-    case Req.get("https://httpbin.org/get") do
-      {:ok, resp}  -> IO.puts("Got \#{resp.status}")
-      {:error, err} -> IO.puts("Failed: \#{inspect(err)}")
+    # Query params
+    resp = Req.get!("https://httpbin.org/get", params: [page: 1, per_page: 5])
+    IO.puts("Query params echoed back: #{inspect(resp.body["args"])}")
+
+    # Non-! variant returns {:ok, resp} | {:error, exception}
+    case Req.get("https://httpbin.org/status/200") do
+      {:ok, resp}   -> IO.puts("Non-! ok: #{resp.status}")
+      {:error, err} -> IO.puts("Non-! error: #{inspect(err)}")
     end
 
-    # All HTTP methods:
-    Req.get!("https://httpbin.org/get")
-    Req.head!("https://httpbin.org/get")
-    Req.post!("https://httpbin.org/post", json: %{hello: "world"})
-    Req.put!("https://httpbin.org/put",   json: %{updated: true})
-    Req.patch!("https://httpbin.org/patch", json: %{field: "value"})
-    Req.delete!("https://httpbin.org/delete")
+    # HEAD — no body
+    resp = Req.head!("https://httpbin.org/get")
+    IO.puts("HEAD status: #{resp.status}, body: #{inspect(resp.body)}")
 
-    # run/1,2 — returns {request, response} (useful for debugging)
-    {req, resp} = Req.run("https://httpbin.org/get")
-    {req.url.host, resp.status}
-    #=> {"httpbin.org", 200}
-
-    # Query parameters
-    resp = Req.get!("https://httpbin.org/get", params: [page: 1, per_page: 20])
-    resp.body["args"]
-    #=> %{"page" => "1", "per_page" => "20"}
-
-    # Custom headers
-    resp = Req.get!("https://httpbin.org/headers",
-      headers: %{"x-custom-header" => "my-value"})
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 2. Req.Response struct
+  # 2. Req.Response struct fields
   # -----------------------------------------------------------------------
   defp response_struct do
     IO.puts("--- Req.Response Struct ---")
 
-    IO.puts("""
-    %Req.Response{
-      status:   200,          # HTTP status code
-      headers:  %{},          # map of header_name => [value, ...]
-      body:     term(),       # decoded body (map, binary, etc.)
-      trailers: %{},          # HTTP trailers
-      assigns:  %{},          # user-assigned data (propagated from request)
-      private:  %{}           # reserved for libraries
-    }
+    resp = Req.get!("https://httpbin.org/get",
+      headers: %{"x-my-header" => "hello"})
 
-    # Working with headers:
-    resp = Req.get!("https://httpbin.org/get")
-    Req.Response.get_header(resp, "content-type")
-    #=> ["application/json"]
+    IO.puts("status:  #{resp.status}")
+    IO.puts("headers: #{inspect(Req.Response.get_header(resp, "content-type"))}")
+    IO.puts("body keys: #{inspect(Map.keys(resp.body))}")
+    IO.puts("assigns: #{inspect(resp.assigns)}")  # user-assigned metadata
 
-    # Check status programmatically:
-    resp.status in 200..299   #=> true
-    resp.status == 404        #=> false
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 3. Base URL pattern — build reusable clients
+  # 3. Base URL pattern — reusable client struct
   # -----------------------------------------------------------------------
   defp base_url_pattern do
     IO.puts("--- Base URL Pattern ---")
 
-    IO.puts("""
-    # Build a reusable base request with shared config
-    github = Req.new(
-      base_url: "https://api.github.com",
-      auth: {:bearer, System.get_env("GITHUB_TOKEN", "")},
-      headers: %{"accept" => "application/vnd.github.v3+json"}
+    # Req.new/1 builds a reusable base request — options merge on each call
+    base = Req.new(
+      base_url: "https://httpbin.org",
+      headers: %{"x-client" => "learn-req"}
     )
 
-    # Reuse across many calls — options merge:
-    elixir_repo = Req.get!(github, url: "/repos/elixir-lang/elixir")
-    req_repo    = Req.get!(github, url: "/repos/wojtekmach/req")
+    r1 = Req.get!(base, url: "/get",  params: [q: "hello"])
+    r2 = Req.get!(base, url: "/uuid")
 
-    IO.puts(elixir_repo.body["description"])
-    IO.puts(req_repo.body["description"])
+    IO.puts("Base client r1 url: #{r1.body["url"]}")
+    IO.puts("Base client r2 uuid: #{r2.body["uuid"]}")
 
-    # Path params (template substitution):
+    # Path params — template substitution in URLs
     resp = Req.get!("https://httpbin.org/status/:code",
-      path_params: [code: 200])
-    resp.status  #=> 200
+      path_params: [code: 201])
+    IO.puts("Path param result status: #{resp.status}")
 
-    # Curly-brace style:
-    Req.get!("https://api.example.com/users/{id}",
-      path_params: [id: 42],
-      path_params_style: :curly)
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 4. Authentication
+  # 4. Request bodies — JSON, form, raw
   # -----------------------------------------------------------------------
-  defp authentication do
-    IO.puts("--- Authentication ---")
+  defp request_bodies do
+    IO.puts("--- Request Bodies ---")
 
-    IO.puts("""
-    # Basic auth
-    Req.get!("https://httpbin.org/basic-auth/user/pass",
-      auth: {:basic, "user:pass"})
+    # JSON body — sets Content-Type: application/json, encodes automatically
+    resp = Req.post!("https://httpbin.org/post",
+      json: %{name: "Alice", age: 30})
+    IO.puts("JSON post echoed: #{inspect(resp.body["json"])}")
 
-    # Bearer token
-    Req.get!("https://api.example.com/data",
-      auth: {:bearer, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."})
+    # URL-encoded form
+    resp = Req.post!("https://httpbin.org/post",
+      form: [username: "alice", role: "admin"])
+    IO.puts("Form post echoed: #{inspect(resp.body["form"])}")
 
-    # Digest auth
-    Req.get!("https://httpbin.org/digest-auth/auth/user/pass",
-      auth: {:digest, "user:pass"})
+    # Raw binary body
+    resp = Req.post!("https://httpbin.org/post",
+      body: "raw text",
+      headers: %{"content-type" => "text/plain"})
+    IO.puts("Raw body echoed: #{inspect(resp.body["data"])}")
 
-    # Load from ~/.netrc
-    Req.get!("https://api.example.com", auth: :netrc)
-    Req.get!("https://api.example.com", auth: {:netrc, "/path/to/.netrc"})
+    # PUT and PATCH
+    resp = Req.put!("https://httpbin.org/put", json: %{updated: true})
+    IO.puts("PUT status: #{resp.status}")
 
-    # Dynamic auth (fetched fresh per request):
-    Req.get!("https://api.example.com",
-      auth: fn -> {:bearer, MyApp.Auth.get_token()} end)
+    resp = Req.patch!("https://httpbin.org/patch", json: %{field: "new"})
+    IO.puts("PATCH status: #{resp.status}")
 
-    # AWS SigV4 (S3, DynamoDB, etc.):
-    s3 = Req.new(
-      base_url: "https://my-bucket.s3.us-west-2.amazonaws.com",
-      aws_sigv4: [
-        access_key_id:     System.get_env("AWS_ACCESS_KEY_ID"),
-        secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
-        service:           :s3,
-        region:            "us-west-2"
-      ]
-    )
-    Req.put!(s3, url: "/my-key", body: "Hello, S3!")
-    Req.get!(s3, url: "/my-key").body  #=> "Hello, S3!"
-    """)
+    # DELETE
+    resp = Req.delete!("https://httpbin.org/delete")
+    IO.puts("DELETE status: #{resp.status}")
+
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 5. Request bodies
-  # -----------------------------------------------------------------------
-  defp request_body do
-    IO.puts("--- Request Body Encoding ---")
-
-    IO.puts("""
-    # JSON (sets Content-Type: application/json, encodes with Jason)
-    Req.post!("https://httpbin.org/post", json: %{name: "Alice", age: 30})
-
-    # URL-encoded form (sets Content-Type: application/x-www-form-urlencoded)
-    Req.post!("https://httpbin.org/post", form: [name: "Alice", tag: "user"])
-
-    # Multipart form (file upload)
-    Req.post!("https://httpbin.org/post",
-      form_multipart: [
-        username: "alice",
-        avatar: {File.read!("avatar.png"), filename: "avatar.png", content_type: "image/png"}
-      ])
-
-    # Multipart with streaming (no need to read whole file into memory)
-    Req.post!("https://httpbin.org/post",
-      form_multipart: [
-        file: {File.stream!("large.bin"), filename: "large.bin"}
-      ])
-
-    # Raw body
-    Req.post!("https://httpbin.org/post", body: "raw bytes here")
-
-    # Compressed request body (gzip)
-    Req.post!("https://httpbin.org/post",
-      compress_body: true,
-      json: %{large: "data"})
-
-    # Compressed response (ask server for gzip, auto-decompress)
-    Req.get!("https://httpbin.org/gzip", compressed: true)
-    """)
-    IO.puts("")
-  end
-
-  # -----------------------------------------------------------------------
-  # 6. Streaming responses
+  # 5. Streaming — into file, IO.stream, callback
   # -----------------------------------------------------------------------
   defp streaming do
-    IO.puts("--- Streaming Responses ---")
+    IO.puts("--- Streaming ---")
 
-    IO.puts("""
-    # Stream to a file (no memory overhead):
-    Req.get!("https://speed.hetzner.de/10MB.bin",
-      into: File.stream!("downloaded.bin"))
-
-    # Stream to stdout:
-    Req.get!("https://httpbin.org/stream/5", into: IO.stream())
-
-    # Stream with a callback (process each chunk):
+    # Stream to IO — each chunk written as it arrives, no buffering
+    IO.write("Streaming 3 lines: ")
     Req.get!("https://httpbin.org/stream/3",
       into: fn {:data, chunk}, {req, resp} ->
-        IO.write(chunk)
+        # chunk is raw binary; process line-by-line or buffer yourself
+        _ = chunk
         {:cont, {req, resp}}
       end)
+    IO.puts("done")
 
-    # Async stream to current process mailbox:
-    resp = Req.get!("https://httpbin.org/stream/3", into: :self)
-    # resp.body is %Req.Response.Async{}
+    # Stream to a file (common for large downloads)
+    tmp = System.tmp_dir!() |> Path.join("req_test.json")
+    Req.get!("https://httpbin.org/json", into: File.stream!(tmp))
+    IO.puts("Streamed to file, size: #{File.stat!(tmp).size} bytes")
+    File.rm!(tmp)
 
-    # Read messages:
-    msg = receive do message -> message end
-    Req.parse_message(resp, msg)
-    #=> {:ok, [data: "line1\\n"]}
-
-    # Or use Enum (blocks until all chunks received):
-    Enum.each(resp.body, fn chunk -> IO.write(chunk) end)
-
-    # Cancel async stream:
-    Req.cancel_async_response(resp)
-
-    # Range requests (partial content):
-    resp = Req.get!("https://httpbin.org/range/100", range: 0..3)
-    resp.status  #=> 206 (Partial Content)
-    resp.body    #=> "abcd"
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 7. Retry and error handling
+  # 6. Retry and error handling
   # -----------------------------------------------------------------------
   defp retry_and_errors do
-    IO.puts("--- Retry & Error Handling ---")
+    IO.puts("--- Retry & Errors ---")
 
-    IO.puts("""
-    # Default: retry safe methods (GET/HEAD) on transient HTTP errors
-    # Retries on: 408, 429, 500, 502, 503, 504, and network errors
-    # Max 3 retries total (4 requests)
-    Req.get!("https://httpbin.org/status/500,200")
+    # Req auto-retries GET on 408/429/5xx — let's see it handle a 500
+    # httpbin /status/500,200 returns 500 first time, 200 second
+    # (in practice httpbin always returns the listed code, so we just show config)
+    resp = Req.get!("https://httpbin.org/status/200",
+      retry: false)  # disable retry
+    IO.puts("retry: false, status: #{resp.status}")
 
-    # Retry all methods:
-    Req.post!("https://api.example.com", json: %{}, retry: :transient)
+    # http_errors: :raise — raises on 4xx/5xx instead of returning response
+    try do
+      Req.get!("https://httpbin.org/status/404", http_errors: :raise, retry: false)
+    rescue
+      e -> IO.puts("http_errors: :raise caught: #{Exception.message(e)}")
+    end
 
-    # Disable retries:
-    Req.get!("https://api.example.com", retry: false)
+    # Timeouts
+    case Req.get("https://httpbin.org/delay/1",
+      receive_timeout: 2_000,
+      retry: false) do
+      {:ok, r}  -> IO.puts("Delayed response: #{r.status}")
+      {:error, e} -> IO.puts("Timeout: #{inspect(e)}")
+    end
 
-    # Custom retry logic:
-    Req.get!("https://api.example.com",
-      retry: fn _req, response ->
-        case response do
-          %Req.Response{status: 429} -> {:delay, 5_000}  # wait 5s
-          %Req.Response{status: 500} -> true              # retry with default delay
-          _                          -> false             # don't retry
-        end
-      end)
-
-    # Custom backoff strategy:
-    Req.get!("https://example.com",
-      retry_delay: fn attempt -> attempt * 1_000 end)  # 1s, 2s, 3s, ...
-
-    # Max retries:
-    Req.get!("https://example.com", max_retries: 5)
-
-    # Raise on HTTP 4xx/5xx (default: return them as-is):
-    Req.get!("https://httpbin.org/status/404", http_errors: :raise)
-    #=> raises RuntimeError
-
-    # Verify exact status:
-    Req.get!("https://httpbin.org/status/200", expect: 200)
-    Req.get!("https://httpbin.org/status/201", expect: 200..299)
-
-    # Timeouts:
-    Req.get!("https://example.com",
-      connect_options: [timeout: 5_000],  # connection timeout
-      receive_timeout: 30_000)             # read timeout
-
-    # Checksum verification:
-    Req.get!("https://httpbin.org/json",
-      checksum: "sha256:abc123...")
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 8. Custom steps (plugin/middleware API)
-  # -----------------------------------------------------------------------
-  defp custom_steps do
-    IO.puts("--- Custom Steps (Middleware) ---")
-
-    IO.puts("""
-    # Steps transform request or response. Compose them with Req.new/1.
-
-    defmodule MyApp.ReqPlugins do
-      # Attach a custom step to a request
-      def attach(request) do
-        request
-        |> Req.Request.register_options([:log_requests])
-        |> Req.Request.append_request_steps(log: &log_request/1)
-        |> Req.Request.append_response_steps(log: &log_response/1)
-      end
-
-      # Request step: receives %Req.Request{}, returns %Req.Request{}
-      defp log_request(request) do
-        Logger.debug("→ \#{request.method |> to_string() |> String.upcase()} \#{request.url}")
-        request
-      end
-
-      # Response step: receives {request, response}, returns {request, response}
-      defp log_response({request, response}) do
-        Logger.debug("← \#{response.status} \#{request.url}")
-        {request, response}
-      end
-    end
-
-    # Use it:
-    req = Req.new(base_url: "https://api.example.com")
-          |> MyApp.ReqPlugins.attach()
-
-    Req.get!(req, url: "/users")
-
-    # Halt the pipeline early (e.g. cache hit):
-    defp cache_response(request) do
-      case Cache.get(request.url) do
-        nil  -> request
-        body -> Req.Request.halt(request, %Req.Response{status: 200, body: body})
-      end
-    end
-    """)
-    IO.puts("")
-  end
-
-  # -----------------------------------------------------------------------
-  # 9. Testing with Plug adapter
+  # 7. Testing with Plug — no network needed
   # -----------------------------------------------------------------------
   defp testing_with_plug do
     IO.puts("--- Testing with Plug (no real HTTP) ---")
 
-    IO.puts("""
-    # In tests, pass plug: instead of a URL.
-    # No network needed — request goes through the Plug directly.
-
-    # Using a Plug module:
-    defmodule FakeAPI do
-      use Plug.Router
-      plug :match
-      plug :dispatch
-
-      get "/users" do
-        send_resp(conn, 200, Jason.encode!([%{id: 1, name: "Alice"}]))
-      end
-
-      match _ do
-        send_resp(conn, 404, "Not Found")
-      end
-    end
-
-    resp = Req.get!(plug: FakeAPI, url: "/users")
-    resp.status  #=> 200
-    resp.body    #=> [%{"id" => 1, "name" => "Alice"}]
-
-    # Using a function plug (simpler for one-off tests):
+    # Function plug — simplest form for one-off tests
     json_plug = fn conn ->
-      Req.Test.json(conn, %{message: "hello"})
+      Req.Test.json(conn, %{message: "hello", items: [1, 2, 3]})
     end
-    resp = Req.get!(plug: json_plug)
-    resp.body["message"]  #=> "hello"
 
-    # Simulate transport errors:
+    resp = Req.get!(plug: json_plug, url: "/anything")
+    IO.puts("Plug response body: #{inspect(resp.body)}")
+    IO.puts("Plug response status: #{resp.status}")
+
+    # Simulate transport error
     error_plug = fn conn ->
       Req.Test.transport_error(conn, :timeout)
     end
-    {:error, %Req.TransportError{reason: :timeout}} =
-      Req.get(plug: error_plug, retry: false)
-
-    # Standard ExUnit test:
-    defmodule MyClient.Test do
-      use ExUnit.Case
-
-      test "fetches users" do
-        api = fn conn ->
-          Req.Test.json(conn, [%{id: 1, name: "Alice"}])
-        end
-
-        assert Req.get!(plug: api).body == [%{"id" => 1, "name" => "Alice"}]
-      end
+    case Req.get(plug: error_plug, retry: false) do
+      {:error, %Req.TransportError{reason: :timeout}} ->
+        IO.puts("Transport error simulated: :timeout")
+      other ->
+        IO.puts("Other: #{inspect(other)}")
     end
-    """)
+
+    IO.puts("")
+  end
+
+  # -----------------------------------------------------------------------
+  # 8. Custom steps — middleware/plugin API
+  # -----------------------------------------------------------------------
+  defp custom_steps do
+    IO.puts("--- Custom Steps (Middleware) ---")
+
+    # Steps are functions attached to the request/response pipeline.
+    # Request step:  receives %Req.Request{}, returns %Req.Request{}
+    # Response step: receives {request, response}, returns {request, response}
+
+    add_trace_id = fn request ->
+      trace_id = :crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower)
+      Req.Request.put_header(request, "x-trace-id", trace_id)
+    end
+
+    log_response = fn {request, response} ->
+      IO.puts("  [step] #{request.method |> to_string() |> String.upcase()} → #{response.status}")
+      {request, response}
+    end
+
+    req =
+      Req.new(base_url: "https://httpbin.org")
+      |> Req.Request.append_request_steps(add_trace_id: add_trace_id)
+      |> Req.Request.append_response_steps(log: log_response)
+
+    resp = Req.get!(req, url: "/headers")
+    IO.puts("x-trace-id sent: #{resp.body["headers"]["X-Trace-Id"]}")
+
     IO.puts("")
   end
 end

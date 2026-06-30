@@ -142,93 +142,125 @@ defmodule LearnSage do
   end
 
   # -----------------------------------------------------------------------
-  # 3. Retry and abort from compensation
+  # 3. Compensation return values — demonstrated with real pipelines
   # -----------------------------------------------------------------------
   defp retry_and_abort do
     IO.puts("--- Compensation Return Values ---")
 
-    IO.puts("""
-      Compensation functions return:
-        :ok               — effect undone, continue compensating previous steps
-        :abort            — effect undone, stop retrying (unrecoverable)
-        {:retry, opts}    — retry the FAILED transaction with backoff
-        {:continue, val}  — circuit breaker: skip undo, forward with new value
-
-      Retry options:
-        retry_limit: 3         — max attempts (default unlimited)
-        base_backoff: 100      — base ms for exponential backoff
-        max_backoff: 5_000     — cap on backoff delay
-        enable_jitter: true    — randomize delay to avoid thundering herd
-
-      Example — retry with backoff:
-        fn reservation, _effects, _opts ->
-          case release_reservation(reservation.id) do
-            :ok                  -> :ok
-            {:error, :not_found} -> :ok      # idempotent — already gone
-            {:error, _reason}    ->
-              {:retry, [retry_limit: 3, base_backoff: 100, max_backoff: 5_000]}
-          end
+    # :abort — stop all retrying immediately (unrecoverable failure)
+    result =
+      Sage.new()
+      |> Sage.run(:step1, fn _, _ -> {:ok, :done} end, fn _, _, _ -> :ok end)
+      |> Sage.run(
+        :charge,
+        fn _, _ ->
+          IO.puts("  [charge] insufficient funds — aborting")
+          {:abort, :insufficient_funds}
+        end,
+        fn _, _, _ ->
+          IO.puts("  [COMP charge] abort — no retry")
+          :abort
         end
+      )
+      |> Sage.execute([])
 
-      Example — abort on unrecoverable error in transaction:
-        fn _effects, _opts ->
-          case charge_card(card, amount) do
-            {:ok, charge}                   -> {:ok, charge}
-            {:error, :insufficient_funds}   -> {:abort, :insufficient_funds}
-            {:error, reason}                -> {:error, reason}
-          end
-        end
-        # {:abort, reason} stops forward progress AND disables retries
-        # Use it when you know retrying won't help
+    IO.puts("  {:abort} result: #{inspect(elem(result, 0))} / #{inspect(elem(result, 1))}")
 
-      Example — circuit breaker (continue with fallback value):
-        fn _failed_effect, _effects, _opts ->
-          # Instead of undoing, provide a safe default and continue forward
-          {:continue, %{id: nil, status: :skipped}}
+    # {:retry, opts} — retry the failed transaction with backoff
+    # Using a counter in the process dict to simulate transient failure
+    Process.put(:attempt, 0)
+
+    result2 =
+      Sage.new()
+      |> Sage.run(
+        :flaky_step,
+        fn _, _ ->
+          n = Process.get(:attempt) + 1
+          Process.put(:attempt, n)
+          IO.puts("  [flaky_step] attempt #{n}")
+          if n < 3, do: {:error, :transient}, else: {:ok, :success}
+        end,
+        fn _, _, _ ->
+          IO.puts("  [COMP flaky_step] retrying...")
+          {:retry, [retry_limit: 5, base_backoff: 10, max_backoff: 100]}
         end
-    """)
+      )
+      |> Sage.execute([])
+
+    IO.puts("  {:retry} result: #{inspect(elem(result2, 0))} after #{Process.get(:attempt)} attempts")
+
+    # {:continue, value} — circuit breaker: skip compensation, forward with fallback
+    result3 =
+      Sage.new()
+      |> Sage.run(
+        :optional_enrichment,
+        fn _, _ ->
+          IO.puts("  [enrichment] service down")
+          {:error, :service_unavailable}
+        end,
+        fn _, _, _ ->
+          IO.puts("  [COMP enrichment] using fallback, continuing forward")
+          {:continue, %{enriched: false, data: %{}}}
+        end
+      )
+      |> Sage.run(:next_step, fn %{optional_enrichment: enrich}, _ ->
+        IO.puts("  [next_step] enriched=#{enrich.enriched}")
+        {:ok, :done}
+      end)
+      |> Sage.execute([])
+
+    IO.puts("  {:continue} result: #{inspect(elem(result3, 0))}")
+    IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 4. Async steps
+  # 4. Async steps — run in parallel Tasks
   # -----------------------------------------------------------------------
   defp async_steps do
-    IO.puts("--- Async Steps ---")
+    IO.puts("--- Async Steps (parallel execution) ---")
 
-    IO.puts("""
-      Sage.run_async/5 — run a step in a background Task.
-      Async steps run in parallel with each other and are awaited
-      before the next synchronous step.
+    # run_async/5 — execute step in a background Task
+    # Multiple async steps run in parallel, awaited before next sync step
+    result =
+      Sage.new()
+      |> Sage.run(:fetch_user, fn _, opts ->
+        IO.puts("  [sync] fetch_user #{opts[:user_id]}")
+        {:ok, %{id: opts[:user_id], email: "alice@example.com"}}
+      end)
+      |> Sage.run_async(
+        :send_welcome_email,
+        fn %{fetch_user: user}, _ ->
+          IO.puts("  [async] send_welcome_email to #{user.email}")
+          Process.sleep(10)
+          {:ok, :email_sent}
+        end,
+        fn _, _, _ -> :ok end
+      )
+      |> Sage.run_async(
+        :sync_crm,
+        fn %{fetch_user: user}, _ ->
+          IO.puts("  [async] sync_crm user #{user.id}")
+          Process.sleep(5)
+          {:ok, :synced}
+        end,
+        fn _, _, _ -> :ok end
+      )
+      # This sync step runs AFTER both async steps above are awaited
+      |> Sage.run(:create_record, fn effects, _ ->
+        IO.puts("  [sync] create_record (async results: #{inspect(Map.keys(effects))})")
+        {:ok, :record_created}
+      end)
+      |> Sage.execute(user_id: 42)
 
-        Sage.new()
-        |> Sage.run(:user, &fetch_user/2, &noop/3)
-        |> Sage.run_async(
-             :send_email,
-             fn %{user: user}, _opts ->
-               EmailService.send_welcome(user.email)
-               {:ok, :email_sent}
-             end,
-             fn _effect, _effects, _opts -> :ok end,
-             timeout: 5_000   # wait up to 5s (default: 5000)
-           )
-        |> Sage.run_async(
-             :sync_crm,
-             fn %{user: user}, _opts ->
-               CRMApi.upsert(user)
-               {:ok, :synced}
-             end,
-             fn _effect, _effects, _opts -> :ok end,
-             timeout: 10_000
-           )
-        |> Sage.run(:finish, &create_record/2, &delete_record/3)
-        # ↑ awaits both async steps before running
+    case result do
+      {:ok, _, effects} ->
+        IO.puts("  Async pipeline success, effects: #{inspect(Map.keys(effects))}")
+        IO.puts("  Note: async steps receive only PRIOR sync effects, not each other's")
+      {:error, reason} ->
+        IO.puts("  Failed: #{inspect(reason)}")
+    end
 
-      Key rule: async steps receive only effects from PRIOR SYNCHRONOUS
-      steps, not from other async steps running in parallel.
-
-      Custom supervisor:
-        run_async(..., supervisor: MyApp.TaskSupervisor)
-    """)
+    IO.puts("")
   end
 
   # -----------------------------------------------------------------------
@@ -265,52 +297,50 @@ defmodule LearnSage do
   end
 
   # -----------------------------------------------------------------------
-  # 6. Quick reference
+  # 6. Sage API surface — build one of each to show the full interface
   # -----------------------------------------------------------------------
   defp reference do
-    IO.puts("--- Quick Reference ---")
+    IO.puts("--- Full API Surface ---")
+
+    # Build a pipeline using every builder function
+    sage =
+      Sage.new()
+      |> Sage.run(:step_no_comp, fn _, _ -> {:ok, :a} end)
+      |> Sage.run(:step_with_comp,
+           fn _, _ -> {:ok, :b} end,
+           fn _, _, _ -> :ok end)
+      |> Sage.run_async(:step_async,
+           fn _, _ -> {:ok, :c} end,
+           fn _, _, _ -> :ok end,
+           timeout: 5_000)
+      |> Sage.finally(fn status, _ ->
+           IO.puts("  [finally] #{inspect(status)}")
+         end)
+
+    IO.puts("Sage struct stages: #{inspect(Enum.map(sage.stages, fn {name, _} -> name end))}")
+
+    # execute/2 — returns {:ok, last_effect, all_effects} | {:error, reason}
+    {:ok, last, effects} = Sage.execute(sage, [])
+    IO.puts("execute result: last=#{inspect(last)}")
+    IO.puts("effects keys: #{inspect(Map.keys(effects))}")
+
+    # Each effect is stored under its step name
+    IO.puts("effects[:step_no_comp]   = #{inspect(effects[:step_no_comp])}")
+    IO.puts("effects[:step_with_comp] = #{inspect(effects[:step_with_comp])}")
+    IO.puts("effects[:step_async]     = #{inspect(effects[:step_async])}")
 
     IO.puts("""
-      Build the pipeline:
-        Sage.new()
-        |> Sage.run(name, tx_fn)                          # no compensation
-        |> Sage.run(name, tx_fn, comp_fn)                 # with compensation
-        |> Sage.run_async(name, tx_fn, comp_fn, opts)     # async + compensation
-        |> Sage.finally(final_fn)                         # always runs
-        |> Sage.with_compensation_error_handler(module)   # handle comp errors
 
-      Execute:
-        Sage.execute(sage, opts)         # -> {:ok, last_effect, effects} | {:error, reason}
-        Sage.transaction(sage, Repo, opts)  # wraps in Ecto.Repo.transaction
+  When to use Sage vs alternatives:
+    Ecto.Multi         — DB-only, automatic SQL rollback. Simpler.
+    Sage               — any side effect (APIs, emails, S3), manual compensation.
+    Sage.transaction/4 — both: Sage compensations + Ecto DB atomicity.
 
-      Transaction fn signature:
-        fn effects_so_far, opts ->
-          {:ok, value}       # success — value stored in effects[name]
-          {:error, reason}   # failure — compensations run
-          {:abort, reason}   # failure — compensations run, no retry
-        end
-
-      Compensation fn signature:
-        fn effect, effects_so_far, opts ->
-          :ok
-          :abort
-          {:retry, [retry_limit: 3, base_backoff: 100, max_backoff: 5_000]}
-          {:continue, fallback_value}
-        end
-
-      Finally fn signature:
-        fn :ok | :error, opts -> any() end   # return ignored
-
-      When to use Sage:
-        - Multi-step workflows touching external APIs (payment, email, SMS)
-        - Fan-out creates in multiple services
-        - Any place where "undo on failure" is currently a manual mess
-        - Where Ecto.Multi doesn't work (non-DB side effects)
-
-      Sage vs Ecto.Multi:
-        Ecto.Multi  — DB only, automatic rollback via SQL transaction
-        Sage        — any side effect, manual compensation, works cross-service
-        Sage.transaction(sage, Repo) — both: Sage for side effects, Ecto for DB atomicity
+  Key rules:
+    1. Compensation functions must be idempotent (safe to run multiple times)
+    2. {:abort} in a tx OR comp stops all retries immediately
+    3. async steps receive only effects from prior SYNC steps
+    4. finally/2 always runs, even on crashes (errors are logged, not raised)
     """)
   end
 end

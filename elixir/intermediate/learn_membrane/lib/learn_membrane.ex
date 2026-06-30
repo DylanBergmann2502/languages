@@ -2,464 +2,271 @@ defmodule LearnMembrane do
   @moduledoc """
   Membrane Framework v1.3 — OTP-native multimedia pipeline framework.
 
-  Membrane brings the Actor model to media processing. Instead of writing
-  a monolithic audio/video pipeline, you compose small, supervised elements:
+  Membrane applies the Actor model to media processing. A pipeline is a
+  supervised graph of elements:
 
     Source → Filter → Filter → Sink
 
-  Each element is a GenServer. They communicate through typed pads
-  (not direct messages). Pipelines supervise elements and restart them
-  on failure — the OTP way, applied to media.
+  Each element is a GenServer. Data flows as %Membrane.Buffer{} through
+  typed connection points called pads. Pipelines supervise elements and
+  restart on failure — OTP semantics applied to media.
 
   Core abstractions:
-    Element  — atomic processing unit (Source, Filter, Sink, Endpoint)
+    Element  — atomic processing unit (Source, Filter, Sink)
     Pad      — typed input/output port on an element
-    Link     — connection between a compatible output pad and input pad
-    Pipeline — supervisor + coordinator for a graph of elements
-    Bin      — reusable group of elements (nestable in a pipeline)
+    Link     — connection between output pad and input pad
+    Pipeline — supervisor + coordinator for an element graph
+    Bin      — reusable group of elements, usable as a single element
 
-  Membrane handles: WebRTC, RTSP, RTMP, HLS, MP4, MKV, Opus, AAC,
-  H.264, H.265, and much more via its plugin ecosystem.
-
-  Setup in mix.exs:
-    {:membrane_core, "~> 1.3"}
+  dep: {:membrane_core, "~> 1.3"}
   """
 
   def run do
     IO.puts("\n=== Membrane Framework: OTP-native Media Pipelines ===\n")
 
-    core_concepts()
-    element_types()
-    pad_definitions()
+    otp_mapping()
     buffer_struct()
+    pad_api()
     actions_reference()
-    pipeline_dsl()
     live_pipeline_demo()
-    bin_concept()
+    filter_chain_demo()
+    bin_demo()
     ecosystem()
   end
 
   # -----------------------------------------------------------------------
-  # 1. Core concepts
+  # 1. OTP mapping
   # -----------------------------------------------------------------------
-  defp core_concepts do
-    IO.puts("--- Core Concepts ---")
+  defp otp_mapping do
+    IO.puts("--- OTP Mapping ---")
+
+    mapping = [
+      {"GenServer",     "Element — each is a supervised GenServer process"},
+      {"Supervisor",    "Pipeline/Bin — supervises element processes"},
+      {"message send",  "Buffer flowing through a pad link"},
+      {"process link",  "Pad connection — typed and demand-aware"},
+    ]
+
+    Enum.each(mapping, fn {otp, membrane} ->
+      IO.puts("  #{String.pad_trailing(otp, 14)} →  #{membrane}")
+    end)
 
     IO.puts("""
-    Membrane maps the OTP supervision model onto media processing:
 
-      GenServer      →  Element (each element is a supervised process)
-      Supervisor     →  Pipeline / Bin
-      Message send   →  Buffer flowing through a link
-      Process link   →  Pad connection (typed, demand-aware)
-
-    Why this works well for media:
-      - Each element crashes independently — pipeline can restart just it
-      - Demand-based flow control prevents memory blow-up (backpressure)
-      - Dynamic pipelines: add/remove elements at runtime
-      - Cluster-aware: elements can run on different nodes
-
-    Data flow is always:
-      Source (produces) → Filter (transforms) → Sink (consumes)
-
-    Elements never send messages directly to each other.
-    They only send Buffers through pads → links → pads.
+  Why OTP semantics matter for media:
+    - Element crashes independently — pipeline restarts just that element
+    - Demand-based flow control prevents buffer memory blow-up
+    - Dynamic pipelines: add/remove elements at runtime
+    - Elements can run on different cluster nodes
     """)
-    IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 2. Element types
-  # -----------------------------------------------------------------------
-  defp element_types do
-    IO.puts("--- Element Types ---")
-
-    IO.puts("""
-    # Membrane.Source — produces data (only output pads)
-    defmodule MyApp.FileSource do
-      use Membrane.Source
-
-      def_output_pad :output,
-        accepted_format: %Membrane.RemoteStream{},
-        flow_control: :manual   # produce only when demanded
-
-      def handle_init(_ctx, %{path: path}) do
-        {:ok, file} = File.open(path, [:read, :binary])
-        {[], %{file: file}}
-      end
-
-      def handle_demand(:output, size, :buffers, _ctx, %{file: file} = state) do
-        buffers = for _ <- 1..size do
-          case IO.binread(file, 4096) do
-            :eof  -> nil
-            chunk -> %Membrane.Buffer{payload: chunk}
-          end
-        end |> Enum.reject(&is_nil/1)
-
-        actions = if length(buffers) < size do
-          [buffer: {:output, buffers}, end_of_stream: :output]
-        else
-          [buffer: {:output, buffers}]
-        end
-
-        {actions, state}
-      end
-    end
-
-    # Membrane.Filter — transforms data (input + output pads)
-    defmodule MyApp.VolumeFilter do
-      use Membrane.Filter
-
-      def_input_pad  :input,  accepted_format: %MyApp.RawAudio{}, flow_control: :auto
-      def_output_pad :output, accepted_format: %MyApp.RawAudio{}, flow_control: :push
-
-      def handle_init(_ctx, %{gain: gain}), do: {[], %{gain: gain}}
-
-      def handle_buffer(:input, %Membrane.Buffer{payload: audio} = buf, _ctx, %{gain: g} = state) do
-        amplified = amplify(audio, g)
-        {[buffer: {:output, %{buf | payload: amplified}}], state}
-      end
-
-      defp amplify(pcm, gain), do: pcm   # placeholder
-    end
-
-    # Membrane.Sink — consumes data (only input pads)
-    defmodule MyApp.FileSink do
-      use Membrane.Sink
-
-      def_input_pad :input, accepted_format: %Membrane.RemoteStream{}, flow_control: :auto
-
-      def handle_init(_ctx, %{path: path}) do
-        {:ok, file} = File.open(path, [:write, :binary])
-        {[], %{file: file}}
-      end
-
-      def handle_buffer(:input, %{payload: data}, _ctx, %{file: file} = state) do
-        IO.binwrite(file, data)
-        {[], state}
-      end
-
-      def handle_end_of_stream(:input, _ctx, %{file: file} = state) do
-        File.close(file)
-        {[terminate: :normal], state}
-      end
-    end
-    """)
-    IO.puts("")
-  end
-
-  # -----------------------------------------------------------------------
-  # 3. Pad definitions
-  # -----------------------------------------------------------------------
-  defp pad_definitions do
-    IO.puts("--- Pad Definitions ---")
-
-    IO.puts("""
-    # def_input_pad and def_output_pad define typed connection points.
-
-    def_input_pad :input,
-      accepted_format: MyFormat,         # required — validates stream format
-      flow_control: :auto,               # :auto | :manual | :push
-      availability: :always,             # :always (static) | :on_request (dynamic)
-      demand_unit: :buffers,             # :buffers | :bytes
-      options: [mute: [default: false]]  # custom per-pad options
-
-    def_output_pad :output,
-      accepted_format: MyFormat,
-      flow_control: :manual,             # :manual | :push (output pads)
-      availability: :always,
-      demand_unit: :buffers
-
-    # flow_control values:
-    #   :auto   — Membrane automatically manages demand between input/output
-    #             (use for filter-like elements that transform 1:1)
-    #   :manual — you control demand via {:demand, pad_ref} actions
-    #             (use for sources or elements with non-1:1 buffer ratio)
-    #   :push   — producer sends as fast as possible, no backpressure
-    #             (careful: can overflow downstream if not rate-limited)
-
-    # Dynamic pads (availability: :on_request) — created per link:
-    def_input_pad :input,
-      availability: :on_request,       # created when a link is established
-      accepted_format: _any,           # match any format
-      flow_control: :auto
-
-    # Access a dynamic pad instance with Pad.ref/2:
-    # Pad.ref(:input, some_unique_id)
-    # e.g. Pad.ref(:input, :microphone_1)
-
-    # accepted_format matching:
-    accepted_format: %Membrane.RawAudio{}              # exact struct
-    accepted_format: %Membrane.RawAudio{channels: 2}   # with constraints
-    accepted_format: %Membrane.RemoteStream{}           # any remote stream
-    accepted_format: Membrane.H264                      # module name
-    accepted_format: _any                               # wildcard
-    """)
-    IO.puts("")
-  end
-
-  # -----------------------------------------------------------------------
-  # 4. Buffer struct
+  # 2. Membrane.Buffer — the unit of data
   # -----------------------------------------------------------------------
   defp buffer_struct do
     IO.puts("--- Membrane.Buffer ---")
 
-    IO.puts("""
-    # The unit of data flowing between elements.
+    # Create buffers directly — this is what elements send to each other
+    simple = %Membrane.Buffer{payload: "hello membrane"}
+    IO.puts("Simple buffer: #{inspect(simple)}")
 
-    %Membrane.Buffer{
-      payload:  bitstring() | Membrane.Payload.t(),  # the actual data (required)
-      pts:      non_neg_integer() | nil,              # presentation timestamp (nanoseconds)
-      dts:      non_neg_integer() | nil,              # decode timestamp (nanoseconds)
-      metadata: %{}                                   # arbitrary metadata map
-    }
-
-    # Creating buffers:
-    %Membrane.Buffer{payload: <<1, 2, 3, 4>>}
-
-    %Membrane.Buffer{
-      payload:  compressed_frame,
-      dts:      frame_number * frame_duration_ns,
-      pts:      presentation_time_ns,
+    # With timestamps (nanoseconds)
+    with_pts = %Membrane.Buffer{
+      payload:  <<0, 1, 2, 3>>,
+      pts:      Membrane.Time.milliseconds(33),   # 33ms presentation time
+      dts:      Membrane.Time.milliseconds(30),   # 30ms decode time
       metadata: %{keyframe: true, width: 1920, height: 1080}
     }
+    IO.puts("Buffer pts:  #{with_pts.pts} ns (= #{with_pts.pts / 1_000_000} ms)")
+    IO.puts("Buffer dts:  #{with_pts.dts} ns")
+    IO.puts("Buffer meta: #{inspect(with_pts.metadata)}")
 
-    # Timestamps use Membrane.Time helpers:
-    Membrane.Time.milliseconds(33)   #=> 33_000_000 (33ms in nanoseconds)
-    Membrane.Time.seconds(1)         #=> 1_000_000_000
-    Membrane.Time.nanoseconds(pts)   #=> pts (identity)
+    # Time helpers
+    IO.puts("1 second in ns:  #{Membrane.Time.seconds(1)}")
+    IO.puts("33ms in ns:      #{Membrane.Time.milliseconds(33)}")
 
-    # Passing buffers through a filter (common pattern):
-    def handle_buffer(:input, buffer, _ctx, state) do
-      processed = %{buffer | payload: transform(buffer.payload)}
-      {[buffer: {:output, processed}], state}
-    end
-    """)
+    # Transforming a buffer (common filter pattern)
+    transformed = %{with_pts | payload: String.upcase("hello")}
+    IO.puts("Transformed payload: #{inspect(transformed.payload)}")
+
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 5. Actions reference
+  # 3. Pad definitions — inspect compiled pad specs from real modules
+  # -----------------------------------------------------------------------
+  defp pad_api do
+    IO.puts("--- Pad Definitions ---")
+
+    # These modules are defined below — inspect their compiled pad specs
+    source_pads = DemoSource.__membrane_pads__()
+    IO.puts("DemoSource pads: #{inspect(Keyword.keys(source_pads))}")
+    {_name, output_spec} = Enum.find(source_pads, fn {name, _} -> name == :output end)
+    IO.puts("  :output flow_control: #{output_spec.flow_control}")
+    IO.puts("  :output direction:    #{output_spec.direction}")
+
+    filter_pads = DemoFilter.__membrane_pads__()
+    IO.puts("DemoFilter pads: #{inspect(Keyword.keys(filter_pads))}")
+
+    sink_pads = DemoSink.__membrane_pads__()
+    IO.puts("DemoSink pads:   #{inspect(Keyword.keys(sink_pads))}")
+
+    IO.puts("""
+
+  Pad options reference:
+    def_input_pad :input,
+      accepted_format: %Membrane.RemoteStream{},  # validates stream format
+      flow_control:    :auto,   # :auto | :manual | :push
+      availability:    :always  # :always (static) | :on_request (dynamic)
+
+    def_output_pad :output,
+      accepted_format: %Membrane.RemoteStream{},
+      flow_control:    :manual  # :manual | :push
+
+    flow_control:
+      :auto   — Membrane manages demand automatically (good for 1:1 filters)
+      :manual — you control demand via {:demand, pad} actions
+      :push   — send without backpressure (risk: downstream overflow)
+    """)
+  end
+
+  # -----------------------------------------------------------------------
+  # 4. Actions reference — what callbacks return
   # -----------------------------------------------------------------------
   defp actions_reference do
     IO.puts("--- Actions Reference ---")
 
-    IO.puts("""
-    # Callbacks return {[action], new_state}.
-    # Actions are the ONLY way elements interact with the world.
+    # Actions are keyword lists returned by callbacks as {actions, state}
+    # Show each action as a real term that can be inspected
 
-    ## Data flow actions (elements with pads):
-    {:buffer,           {:output, %Membrane.Buffer{...}}}      # send one buffer
-    {:buffer,           {:output, [buf1, buf2]}}               # send multiple
-    {:stream_format,    {:output, %MyFormat{}}}                 # declare stream format
-    {:event,            {:output, %SomeEvent{}}}                # send event
-    {:end_of_stream,    :output}                                # signal EOS
+    data_actions = [
+      {:buffer,        {:output, %Membrane.Buffer{payload: "data"}}},
+      {:stream_format, {:output, %Membrane.RemoteStream{}}},
+      {:end_of_stream, :output},
+    ]
 
-    ## Demand actions (manual flow control):
-    {:demand,           :input}                                 # demand 1 buffer
-    {:demand,           {:input, 10}}                           # demand N buffers
-    {:redemand,         :output}                                # re-call handle_demand
-    {:pause_auto_demand, :input}                                # pause auto demand
-    {:resume_auto_demand, :input}                               # resume
+    demand_actions = [
+      {:demand,   :input},
+      {:demand,   {:input, 10}},
+      {:redemand, :output},
+    ]
 
-    ## Pipeline/Bin actions:
-    {:spec,             [child(:a, A) |> child(:b, B)]}         # add children
-    {:remove_child,     :child_name}                            # remove child
-    {:remove_children,  [:child_a, :child_b]}                   # remove multiple
+    general_actions = [
+      {:notify_parent, {:progress, 50}},
+      {:terminate,     :normal},
+    ]
 
-    ## General actions (all components):
-    {:notify_parent,    {:my_event, data}}                      # notify parent
-    {:terminate,        :normal}                                # terminate cleanly
-    {:terminate,        {:error, reason}}                       # terminate with error
-    {:start_timer,      {:my_timer, Membrane.Time.seconds(1)}}  # start timer
-    {:stop_timer,       :my_timer}                              # stop timer
-    {:reply_to_sync,    {:ok, response}}                        # reply to synchronous call
+    IO.puts("Data flow actions:")
+    Enum.each(data_actions, fn a -> IO.puts("  #{inspect(a)}") end)
 
-    ## Pipeline start action (handle_init only):
-    {:spec, children_spec}                                      # declare initial graph
-    """)
+    IO.puts("Demand actions:")
+    Enum.each(demand_actions, fn a -> IO.puts("  #{inspect(a)}") end)
+
+    IO.puts("General actions:")
+    Enum.each(general_actions, fn a -> IO.puts("  #{inspect(a)}") end)
+
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 6. Pipeline DSL
-  # -----------------------------------------------------------------------
-  defp pipeline_dsl do
-    IO.puts("--- Pipeline DSL ---")
-
-    IO.puts("""
-    # Pipelines define their element graph in handle_init via :spec action.
-
-    defmodule MyApp.TranscodePipeline do
-      use Membrane.Pipeline
-
-      @impl true
-      def handle_init(_ctx, %{input: input_path, output: output_path}) do
-        spec = [
-          # child(name, module_or_struct) — spawn a named element
-          child(:source, %MyApp.FileSource{path: input_path})
-          |> child(:demuxer,  MyApp.MP4Demuxer)
-          |> child(:decoder,  MyApp.H264Decoder)
-          |> child(:scaler,   %MyApp.VideoScaler{width: 1280, height: 720})
-          |> child(:encoder,  %MyApp.H264Encoder{bitrate: 2_000_000})
-          |> child(:muxer,    MyApp.MP4Muxer)
-          |> child(:sink,     %MyApp.FileSink{path: output_path})
-        ]
-
-        {[spec: spec], %{}}
-      end
-
-      # Notified when any element signals EOS on a pad
-      @impl true
-      def handle_element_end_of_stream(:sink, :input, _ctx, state) do
-        {[terminate: :normal], state}
-      end
-
-      # Notified when a child sends {:notify_parent, msg}
-      @impl true
-      def handle_child_notification(msg, child, _ctx, state) do
-        IO.puts("#{child} says: #{inspect msg}")
-        {[], state}
-      end
-    end
-
-    # Start the pipeline:
-    {:ok, _sup, pipeline} = Membrane.Pipeline.start_link(MyApp.TranscodePipeline, %{
-      input:  "/tmp/input.mp4",
-      output: "/tmp/output.mp4"
-    })
-
-    # Add more elements at runtime:
-    Membrane.Pipeline.call(pipeline, :add_overlay)
-
-    # Terminate:
-    Membrane.Pipeline.terminate(pipeline)
-
-    ## Specifying non-default pads with via_in/via_out:
-    child(:source, MySource)
-    |> via_out(:video)                           # use :video output pad
-    |> via_in(:raw_input, options: [mute: true]) # use :raw_input with options
-    |> child(:encoder, MyEncoder)
-
-    ## Dynamic child names (for multiple instances):
-    for i <- 1..4 do
-      child({:worker, i}, %MyApp.Worker{index: i})
-      |> child({:sink, i}, %MyApp.FileSink{path: "/tmp/out_\#{i}.mp4"})
-    end
-
-    ## get_child/1 — reference an already-started child:
-    get_child(:demuxer)
-    |> via_out(:audio)
-    |> child(:audio_encoder, MyApp.AACEncoder)
-    |> child(:audio_sink, %MyApp.FileSink{path: "/tmp/audio.aac"})
-    """)
-    IO.puts("")
-  end
-
-  # -----------------------------------------------------------------------
-  # 7. Live pipeline demo (compilable)
+  # 5. Live pipeline demo — Source → Sink
   # -----------------------------------------------------------------------
   defp live_pipeline_demo do
-    IO.puts("--- Live Pipeline Demo ---")
+    IO.puts("--- Live Pipeline: Source → Sink ---")
 
-    # Start and immediately terminate a minimal pipeline to show it works
     {:ok, _sup, pipeline} = Membrane.Pipeline.start_link(DemoPipeline, [])
-    Process.sleep(200)
-    Membrane.Pipeline.terminate(pipeline)
-    IO.puts("Pipeline ran and terminated cleanly.")
-    IO.puts("")
-  end
+    ref = Process.monitor(pipeline)
 
-  # -----------------------------------------------------------------------
-  # 8. Bin concept
-  # -----------------------------------------------------------------------
-  defp bin_concept do
-    IO.puts("--- Bins: Reusable Element Groups ---")
-
-    IO.puts("""
-    # A Bin is like a Pipeline, but it can be used AS an element inside
-    # another pipeline. Great for packaging reusable subgraphs.
-
-    defmodule MyApp.AudioProcessingBin do
-      use Membrane.Bin
-
-      def_input_pad  :input,  accepted_format: %Membrane.RawAudio{}, flow_control: :auto
-      def_output_pad :output, accepted_format: %Membrane.RawAudio{}, flow_control: :push
-
-      @impl true
-      def handle_init(_ctx, opts) do
-        spec = [
-          bin_input()                            # connect bin's :input pad to
-          |> child(:normalizer, MyApp.Normalizer)
-          |> child(:compressor, %MyApp.Compressor{threshold: opts.threshold})
-          |> child(:limiter,    MyApp.Limiter)
-          |> bin_output()                        # connect to bin's :output pad
-        ]
-        {[spec: spec], %{}}
-      end
+    # Pipeline terminates itself after processing — wait for it
+    receive do
+      {:DOWN, ^ref, :process, ^pipeline, reason} ->
+        IO.puts("Pipeline finished: #{inspect(reason)}")
+    after
+      2000 -> IO.puts("Pipeline still running after 2s")
     end
 
-    # Use the bin as if it were a single element:
-    child(:mic, MyApp.MicrophoneSource)
-    |> child(:audio_processing, %MyApp.AudioProcessingBin{threshold: -6.0})
-    |> child(:encoder, MyApp.OpusEncoder)
-    |> child(:sink, MyApp.RTPSink)
-
-    # From outside the pipeline, :audio_processing looks like a Filter.
-    # The internal structure is hidden — encapsulation.
-    """)
     IO.puts("")
   end
 
   # -----------------------------------------------------------------------
-  # 9. Ecosystem
+  # 6. Filter chain demo — Source → Filter → Sink
+  # -----------------------------------------------------------------------
+  defp filter_chain_demo do
+    IO.puts("--- Live Pipeline: Source → Filter → Sink ---")
+
+    {:ok, _sup, pipeline} = Membrane.Pipeline.start_link(FilterChainPipeline, [])
+    ref = Process.monitor(pipeline)
+
+    receive do
+      {:DOWN, ^ref, :process, ^pipeline, reason} ->
+        IO.puts("Filter chain finished: #{inspect(reason)}")
+    after
+      2000 -> IO.puts("Filter chain still running after 2s")
+    end
+
+    IO.puts("")
+  end
+
+  # -----------------------------------------------------------------------
+  # 7. Bin demo — bin used as element inside pipeline
+  # -----------------------------------------------------------------------
+  defp bin_demo do
+    IO.puts("--- Bin: Reusable Element Group ---")
+
+    # A Bin wraps a subgraph behind a single element interface.
+    # DemoDoubleFilterBin contains two DemoFilters internally,
+    # but appears as a single element from the pipeline's perspective.
+
+    {:ok, _sup, pipeline} = Membrane.Pipeline.start_link(BinPipeline, [])
+    ref = Process.monitor(pipeline)
+
+    receive do
+      {:DOWN, ^ref, :process, ^pipeline, reason} ->
+        IO.puts("Bin pipeline finished: #{inspect(reason)}")
+    after
+      2000 -> IO.puts("Bin pipeline still running after 2s")
+    end
+
+    IO.puts("")
+  end
+
+  # -----------------------------------------------------------------------
+  # 8. Ecosystem overview
   # -----------------------------------------------------------------------
   defp ecosystem do
-    IO.puts("--- Membrane Ecosystem ---")
+    IO.puts("--- Ecosystem Plugins ---")
+
+    plugins = [
+      {"I/O",        ["membrane_file_plugin", "membrane_hackney_plugin",
+                      "membrane_rtmp_plugin", "membrane_udp_plugin"]},
+      {"Containers", ["membrane_mp4_plugin", "membrane_matroska_plugin",
+                      "membrane_ogg_plugin"]},
+      {"Codecs",     ["membrane_h264_ffmpeg_plugin", "membrane_opus_plugin",
+                      "membrane_aac_plugin"]},
+      {"Streaming",  ["membrane_webrtc_plugin", "membrane_hls_plugin",
+                      "membrane_rtp_plugin"]},
+      {"Utilities",  ["membrane_tee_plugin (1→N fan-out)",
+                      "membrane_funnel_plugin (N→1 fan-in)",
+                      "membrane_realtimer_plugin"]},
+    ]
+
+    Enum.each(plugins, fn {category, pkgs} ->
+      IO.puts("  #{category}:")
+      Enum.each(pkgs, fn p -> IO.puts("    #{p}") end)
+    end)
 
     IO.puts("""
-    Membrane plugins (all on hex.pm):
 
-    I/O:
-      membrane_file_plugin       — read/write files
-      membrane_hackney_plugin    — HTTP source/sink
-      membrane_rtmp_plugin       — RTMP server/client
-      membrane_rtsp_plugin       — RTSP client
-      membrane_udp_plugin        — UDP source/sink
-
-    Containers / Muxing:
-      membrane_mp4_plugin        — MP4 muxer/demuxer
-      membrane_matroska_plugin   — MKV muxer/demuxer
-      membrane_flv_plugin        — FLV (Flash video)
-      membrane_ogg_plugin        — Ogg container
-
-    Codecs:
-      membrane_h264_ffmpeg_plugin   — H.264 encode/decode via FFmpeg
-      membrane_h265_ffmpeg_plugin   — H.265 encode/decode
-      membrane_opus_plugin          — Opus audio (libopus)
-      membrane_aac_plugin           — AAC (FDK-AAC)
-      membrane_raw_audio_parser_plugin
-
-    Streaming:
-      membrane_webrtc_plugin        — WebRTC (signaling + media)
-      membrane_hls_plugin           — HLS output
-      membrane_rtp_plugin           — RTP/RTCP
-
-    Utilities:
-      membrane_tee_plugin           — fan-out (1 input → N outputs)
-      membrane_realtimer_plugin     — real-time pacing
-      membrane_funnel_plugin        — fan-in (N inputs → 1 output)
-      membrane_stream_sync_plugin   — sync multiple streams by PTS
-
-    Typical real-world pipeline (WebRTC ingest → HLS output):
-      WebRTC → RTP Depay → H264 Parser → MP4 Muxer → HLS Sink
+  Typical production pipeline (WebRTC ingest → HLS output):
+    WebRTC source → RTP depayloader → H264 parser → MP4 muxer → HLS sink
     """)
-    IO.puts("")
   end
 end
 
-# ---- Minimal compilable pipeline for the live demo ----
-
+# ============================================================
+# DemoSource — produces text buffers, signals end of stream
+# ============================================================
 defmodule DemoSource do
   use Membrane.Source
 
@@ -468,17 +275,47 @@ defmodule DemoSource do
     flow_control: :manual
 
   @impl true
-  def handle_init(_ctx, _opts), do: {[], %{sent: false}}
-
-  @impl true
-  def handle_demand(:output, _size, _unit, _ctx, %{sent: false} = state) do
-    buf = %Membrane.Buffer{payload: "hello membrane"}
-    {[buffer: {:output, buf}, end_of_stream: :output], %{state | sent: true}}
+  def handle_init(_ctx, opts) do
+    messages = Keyword.get(opts, :messages, ["hello", "membrane", "world"])
+    {[], %{messages: messages}}
   end
 
-  def handle_demand(:output, _size, _unit, _ctx, state), do: {[], state}
+  @impl true
+  def handle_demand(:output, _size, _unit, _ctx, %{messages: []} = state) do
+    {[end_of_stream: :output], state}
+  end
+
+  def handle_demand(:output, _size, _unit, _ctx, %{messages: [msg | rest]} = state) do
+    buf = %Membrane.Buffer{payload: msg}
+    {[buffer: {:output, buf}], %{state | messages: rest}}
+  end
 end
 
+# ============================================================
+# DemoFilter — transforms each buffer's payload (uppercase)
+# ============================================================
+defmodule DemoFilter do
+  use Membrane.Filter
+
+  def_input_pad  :input,  accepted_format: %Membrane.RemoteStream{}, flow_control: :auto
+  def_output_pad :output, accepted_format: %Membrane.RemoteStream{}, flow_control: :push
+
+  @impl true
+  def handle_init(_ctx, opts) do
+    transform = Keyword.get(opts, :transform, &String.upcase/1)
+    {[], %{transform: transform}}
+  end
+
+  @impl true
+  def handle_buffer(:input, %Membrane.Buffer{payload: data} = buf, _ctx, %{transform: f} = state) do
+    transformed = %{buf | payload: f.(data)}
+    {[buffer: {:output, transformed}], state}
+  end
+end
+
+# ============================================================
+# DemoSink — receives buffers and prints them
+# ============================================================
 defmodule DemoSink do
   use Membrane.Sink
 
@@ -487,26 +324,96 @@ defmodule DemoSink do
     flow_control: :auto
 
   @impl true
-  def handle_init(_ctx, _opts), do: {[], %{}}
+  def handle_init(_ctx, opts) do
+    label = Keyword.get(opts, :label, "Sink")
+    {[], %{label: label, received: []}}
+  end
 
   @impl true
-  def handle_buffer(:input, buf, _ctx, state) do
-    IO.puts("  Sink received: #{inspect buf.payload}")
-    {[], state}
+  def handle_buffer(:input, %Membrane.Buffer{payload: data}, _ctx, state) do
+    IO.puts("  [#{state.label}] received: #{inspect(data)}")
+    {[], %{state | received: [data | state.received]}}
   end
 
   @impl true
   def handle_end_of_stream(:input, _ctx, state) do
+    IO.puts("  [#{state.label}] end of stream (total: #{length(state.received)} buffers)")
     {[terminate: :normal], state}
   end
 end
 
+# ============================================================
+# DemoDoubleFilterBin — a Bin wrapping two filters
+# Appears as a single element to the pipeline
+# ============================================================
+defmodule DemoDoubleFilterBin do
+  use Membrane.Bin
+
+  def_input_pad  :input,  accepted_format: %Membrane.RemoteStream{}, flow_control: :auto
+  def_output_pad :output, accepted_format: %Membrane.RemoteStream{}, flow_control: :push
+
+  @impl true
+  def handle_init(_ctx, _opts) do
+    spec = [
+      bin_input()
+      |> child(:filter1, %DemoFilter{transform: &String.upcase/1})
+      |> child(:filter2, %DemoFilter{transform: fn s -> "[#{s}]" end})
+      |> bin_output()
+    ]
+    {[spec: spec], %{}}
+  end
+end
+
+# ============================================================
+# Pipelines
+# ============================================================
 defmodule DemoPipeline do
   use Membrane.Pipeline
 
   @impl true
   def handle_init(_ctx, _opts) do
-    spec = [child(:source, DemoSource) |> child(:sink, DemoSink)]
+    spec = [
+      child(:source, %DemoSource{messages: ["alpha", "beta", "gamma"]})
+      |> child(:sink, %DemoSink{label: "DemoPipeline"})
+    ]
+    {[spec: spec], %{}}
+  end
+
+  @impl true
+  def handle_element_end_of_stream(:sink, :input, _ctx, state) do
+    {[terminate: :normal], state}
+  end
+end
+
+defmodule FilterChainPipeline do
+  use Membrane.Pipeline
+
+  @impl true
+  def handle_init(_ctx, _opts) do
+    spec = [
+      child(:source, %DemoSource{messages: ["hello", "world"]})
+      |> child(:filter, %DemoFilter{transform: &String.upcase/1})
+      |> child(:sink, %DemoSink{label: "FilterChain"})
+    ]
+    {[spec: spec], %{}}
+  end
+
+  @impl true
+  def handle_element_end_of_stream(:sink, :input, _ctx, state) do
+    {[terminate: :normal], state}
+  end
+end
+
+defmodule BinPipeline do
+  use Membrane.Pipeline
+
+  @impl true
+  def handle_init(_ctx, _opts) do
+    spec = [
+      child(:source, %DemoSource{messages: ["bin", "pipeline", "demo"]})
+      |> child(:double_filter, DemoDoubleFilterBin)
+      |> child(:sink, %DemoSink{label: "BinPipeline"})
+    ]
     {[spec: spec], %{}}
   end
 

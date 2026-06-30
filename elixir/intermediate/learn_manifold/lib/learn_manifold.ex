@@ -184,59 +184,32 @@ defmodule LearnManifold do
   defp real_world_pattern do
     IO.puts("--- Real-World Pattern: Server Broadcast ---")
 
-    IO.puts("""
-    # Discord's use case: a "guild" GenServer with 100k connected user pids
-    # broadcasting events like "user joined", "message sent", etc.
+    # A GuildServer (Discord-style) — GenServer holding N member pids,
+    # broadcasting events to all of them via Manifold
+    {:ok, guild} = GuildServer.start_link(guild_id: :guild_1)
 
-    defmodule MyApp.GuildServer do
-      use GenServer
-
-      # State holds all connected session pids
-      defstruct [:guild_id, members: %{}]   # %{user_id => pid}
-
-      def broadcast(guild_id, event) do
-        GenServer.cast({:via, Registry, {GuildRegistry, guild_id}}, {:broadcast, event})
+    # Spawn 500 fake session processes that receive events
+    member_pids =
+      for i <- 1..500 do
+        pid = spawn(fn ->
+          receive do
+            {:event, msg} -> IO.puts("  member #{i}: #{msg}")
+          after
+            2000 -> :timeout
+          end
+        end)
+        GuildServer.join(guild, i, pid)
+        pid
       end
 
-      def handle_cast({:broadcast, event}, %{members: members} = state) do
-        pids = Map.values(members)
+    IO.puts("  Guild has #{length(member_pids)} members")
 
-        # Naive: Enum.each(pids, &send(&1, event))
-        # → 100k send calls, blocks this GenServer for seconds
+    # Broadcast — Manifold fans out to all 500 in one call
+    GuildServer.broadcast(guild, {:event, "user_joined"})
+    Process.sleep(50)
+    IO.puts("  Broadcast complete")
 
-        # Manifold: group by node, N sends total (N = cluster size)
-        Manifold.send(pids, event)
-        # → returns immediately, partitioners handle distribution
-
-        {:noreply, state}
-      end
-
-      def handle_cast({:join, user_id, pid}, %{members: members} = state) do
-        {:noreply, %{state | members: Map.put(members, user_id, pid)}}
-      end
-
-      def handle_cast({:leave, user_id}, %{members: members} = state) do
-        {:noreply, %{state | members: Map.delete(members, user_id)}}
-      end
-    end
-
-    # For very large payloads (e.g. initial state sync):
-    def handle_cast({:sync, payload}, %{members: members} = state) do
-      pids = Map.values(members)
-
-      Manifold.send(pids, {:sync, payload},
-        pack_mode: :binary,   # encode once for all nodes
-        send_mode: :offload   # don't block this GenServer at all
-      )
-
-      {:noreply, state}
-    end
-
-    # Rule of thumb:
-    #   < 100 recipients  → plain send/2 or Enum.each is fine
-    #   > 1000 recipients → use Manifold
-    #   cross-node        → Manifold shines most (N sends vs 1000s)
-    """)
+    GuildServer.stop(guild)
 
     # Live demo: measure time for direct vs Manifold send
     n = 1000
@@ -256,5 +229,32 @@ defmodule LearnManifold do
     IO.puts("Manifold send (#{n} pids): #{manifold_us}µs")
     IO.puts("(Manifold advantage grows with node count and message size)")
     IO.puts("")
+  end
+end
+
+# ============================================================
+# GuildServer — GenServer that holds member pids and broadcasts via Manifold
+# ============================================================
+defmodule GuildServer do
+  use GenServer
+
+  def start_link(opts), do: GenServer.start_link(__MODULE__, opts)
+  def join(server, user_id, pid), do: GenServer.call(server, {:join, user_id, pid})
+  def broadcast(server, event),   do: GenServer.cast(server, {:broadcast, event})
+  def stop(server),               do: GenServer.stop(server)
+
+  @impl GenServer
+  def init(opts), do: {:ok, %{guild_id: opts[:guild_id], members: %{}}}
+
+  @impl GenServer
+  def handle_call({:join, user_id, pid}, _from, state) do
+    {:reply, :ok, %{state | members: Map.put(state.members, user_id, pid)}}
+  end
+
+  @impl GenServer
+  def handle_cast({:broadcast, event}, %{members: members} = state) do
+    pids = Map.values(members)
+    Manifold.send(pids, event)
+    {:noreply, state}
   end
 end
